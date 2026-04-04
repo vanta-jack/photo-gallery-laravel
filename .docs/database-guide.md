@@ -466,4 +466,4 @@ Together, they make database management predictable and enjoyable. You can reset
 php artisan migrate:fresh --seed
 ```
 
-This workflow is why Laravel is so popular for rapid application development!
+This workflow is why Laravel is so popular for rapid application development
