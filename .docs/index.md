@@ -16,3 +16,9 @@ bunx dbml-renderer -i schema.dbml -o er-diagram.svg
 ```
 
 The Entity-Relationship diagram was written in a version-controlled DBML (Database Markup Language) file and compiled with bun's dbml-renderer
+
+## MVC: Model-Viewer-Controller Architecture
+
+The project leverages Laravel's opinionated MVC architecture to handle the PHP and database architecture, as well as introducing standard patterns to ensure a production-ready and stable setup.
+
+In simple terms, a model is similar to a database table, a viewer is the front-end PHP code, and the controller handles the routing and linking, as well as authentication.

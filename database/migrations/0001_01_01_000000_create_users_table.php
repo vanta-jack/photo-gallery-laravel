@@ -13,37 +13,25 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
+            $table->enum("role", ["guest", "user", "admin"])->default("guest");
+            // Email is nullable and not enforced to be unique, as uniqueness is handle via logic controllers and is negligible at db level.
+            $table->string('email')->nullable();
+            $table->string("first_name")->nullable();
+            $table->string("last_name")->nullable();
+            // Similar to the case with email, hashing will be handed by the logic controller 
+            $table->string('password')->nullable();
+
+            // TODO: Once the photos table is created, we can add a foreign key constraint here to ensure referential integrity.
+            $table->bigInteger("profile_photo_id")->nullable();
+            // Timestamps handle created_at and updated_at.
             $table->timestamps();
         });
-
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
-        });
     }
-
     /**
-     * Reverse the migrations.
+     * Reverse the migrations. Essentially, up creates the users table, and down drops it, allowing for easy rollback of database changes.
      */
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
     }
 };
