@@ -4,9 +4,11 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
+        "diagram": "dbml-renderer -i ./.docs/schema.dbml -o ./.docs/er-diagram.svg",
         "dev": "vite"
     },
     "devDependencies": {
+        "@softwaretechnik/dbml-renderer": "^1.0.31",
         "@tailwindcss/vite": "^4.0.0",
         "axios": ">=1.11.0 <=1.14.0",
         "concurrently": "^9.0.1",
