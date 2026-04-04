@@ -1,0 +1,102 @@
+Table users {
+  id bigint [pk, increment]
+  role varchar [note: "enum: guest, user, admin"]
+  email varchar [null]
+  first_name varchar [null]
+  last_name varchar [null]
+  password varchar [null, note: "hashed"]
+  profile_photo_id bigint [null, ref: > photos.id]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table photos {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  path varchar
+  title varchar
+  description text [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table photo_ratings {
+  id bigint [pk, increment]
+  photo_id bigint [ref: > photos.id]
+  user_id bigint [ref: > users.id]
+  rating tinyint [note: "1-5, computed as avg for graphical analysis"]
+  created_at timestamp
+  updated_at timestamp
+
+  indexes {
+    (photo_id, user_id) [unique]
+  }
+}
+
+Table photo_comments {
+  id bigint [pk, increment]
+  photo_id bigint [ref: > photos.id]
+  user_id bigint [ref: > users.id]
+  body text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table albums {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  cover_photo_id bigint [null, ref: > photos.id]
+  title varchar [default: ""]
+  description text [null]
+  is_private boolean [default: false]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table album_photo {
+  album_id bigint [ref: > albums.id]
+  photo_id bigint [ref: > photos.id]
+
+  indexes {
+    (album_id, photo_id) [pk]
+  }
+}
+
+Table milestones {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  photo_id bigint [null, ref: > photos.id]
+  stage varchar [note: "enum: baby, grade_school, highschool_college"]
+  label varchar [note: "e.g. Month 1, Grade 3, 2nd Year HS"]
+  description text [null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table posts {
+  id bigint [pk, increment]
+  user_id bigint [ref: > users.id]
+  title varchar
+  description text [note: "markdown supported"]
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table post_votes {
+  id bigint [pk, increment]
+  post_id bigint [ref: > posts.id]
+  user_id bigint [ref: > users.id]
+  created_at timestamp
+
+  indexes {
+    (post_id, user_id) [unique]
+  }
+}
+
+Table guestbook_entries {
+  id bigint [pk, increment]
+  post_id bigint [unique, ref: > posts.id]
+  photo_id bigint [null, ref: > photos.id]
+  created_at timestamp
+  updated_at timestamp
+}
