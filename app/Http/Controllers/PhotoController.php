@@ -102,20 +102,14 @@ class PhotoController extends Controller
 
     /**
      * Show the form for editing the specified photo.
+     * 
+     * Authorization: Only photo owner or admin can edit
+     * Policy check happens automatically via authorize()
      */
-    public function edit(Photo $photo): View | RedirectResponse
+    public function edit(Photo $photo): View
     {
-        // Authorization - used for both edit and update to ensure only owners/admins can modify. See Controller.php for authorize() method.
-        try {
-            $this->authorize('update', $photo);
-        } catch (AuthorizationException $e) {
-            return redirect()->route('photos.index')->with('error', 'You do not have permission to edit this photo.');
-        }
-
-        // Redirect instead of a 403
-        if (!$this->user()->can('update', $photo)) {
-            return redirect()->route('photos.index')->with('error', 'You do not have permission to edit this photo.');
-        }
+        // Throws AuthorizationException (403) if user can't update
+        $this->authorize('update', $photo);
 
         return view('photos.edit', compact('photo'));
     }
