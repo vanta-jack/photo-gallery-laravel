@@ -28,16 +28,18 @@ class StorePhotoRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
-     * 
+     *
      * Rules explained:
-     * - 'photo': Client-processed WebP base64 string
+     * - 'photo': Client-processed base64 image string
+     *   - WebP preferred
+     *   - JPEG/PNG accepted when WebP encoding is unavailable on device
      * - 'title': Optional string, max 255 chars
      * - 'description': Optional text
      */
     public function rules(): array
     {
         return [
-            'photo' => ['required', 'string', 'regex:/^data:image\/webp;base64,/'],
+            'photo' => ['required', 'string', 'regex:/^data:image\/(webp|png|jpeg|jpg);base64,/'],
             'title' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
         ];
@@ -50,7 +52,7 @@ class StorePhotoRequest extends FormRequest
     {
         return [
             'photo.required' => 'Please select and process an image before uploading.',
-            'photo.regex' => 'Photo must be a WebP image processed on your device.',
+            'photo.regex' => 'Photo must be a processed WebP, PNG, or JPEG image.',
         ];
     }
 

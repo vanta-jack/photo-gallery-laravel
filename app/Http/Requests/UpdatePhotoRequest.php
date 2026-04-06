@@ -21,8 +21,8 @@ class UpdatePhotoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'nullable' allows metadata-only updates; otherwise expect WebP base64
-            'photo' => ['nullable', 'string', 'regex:/^data:image\/webp;base64,/'],
+            // 'nullable' allows metadata-only updates; otherwise expect processed WebP/PNG/JPEG base64
+            'photo' => ['nullable', 'string', 'regex:/^data:image\/(webp|png|jpeg|jpg);base64,/'],
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
         ];

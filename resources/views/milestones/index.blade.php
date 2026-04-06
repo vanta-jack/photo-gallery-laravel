@@ -19,7 +19,7 @@
                 @endif
             </div>
             @if($milestone->photo)
-                <img src="{{ asset('storage/' . $milestone->photo->path) }}" alt="Milestone" class="w-24 h-24 object-cover rounded ml-4">
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($milestone->photo->path) }}" alt="Milestone" class="w-24 h-24 object-cover rounded ml-4">
             @endif
         </div>
     </div>

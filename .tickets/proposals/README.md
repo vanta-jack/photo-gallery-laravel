@@ -39,11 +39,15 @@ Summary of all proposal tickets created from `.tickets/active/004-site-implement
 
 ## Tickets Not Yet Written (Summaries)
 
+## T003C: Gallery View fix
+
+Refer to []
+
 ### T004: Photo Slide Mode
-Fullscreen slideshow viewer with keyboard navigation. Toggle between grid and slideshow. Depends on T001 for styling.
+Fullscreen slideshow viewer with keyboard as well as touch screen button navigation. Toggle between grid and slideshow. Depends on T001 for styling.
 
 ### T005: Animated Splash Page
-VNT logo entrance animation, auto-redirect to dashboard. Depends on T001 for styling.
+Vaniti Faire logo animation, should be a pop-up box when user enters the first time. Depends on T001 for styling.
 
 ### T006: Guestbook as Global Feed
 Refactor guestbook to aggregate posts/photos as feed with user avatars. Depends on T001.

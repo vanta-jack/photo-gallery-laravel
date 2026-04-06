@@ -17,6 +17,16 @@ class PhotoUploadTest extends TestCase
         return 'data:image/webp;base64,' . base64_encode('fake-webp');
     }
 
+    private function fakePngDataUri(): string
+    {
+        return 'data:image/png;base64,' . base64_encode('fake-png');
+    }
+
+    private function fakeJpegDataUri(): string
+    {
+        return 'data:image/jpeg;base64,' . base64_encode('fake-jpeg');
+    }
+
     public function test_single_photo_upload_redirects_to_photo_show(): void
     {
         Storage::fake('public');
@@ -35,6 +45,8 @@ class PhotoUploadTest extends TestCase
         $this->assertNotNull($photo);
         $response->assertRedirect(route('photos.show', $photo));
         Storage::disk('public')->assertExists($photo->path);
+        $this->assertStringStartsWith('photos/', $photo->path);
+        $this->assertStringNotContainsString('data:image/', $photo->path);
     }
 
     public function test_multiple_photo_upload_is_rejected(): void
@@ -77,5 +89,47 @@ class PhotoUploadTest extends TestCase
             'email' => null,
         ]);
         Storage::disk('public')->assertExists($photo->path);
+    }
+
+    public function test_png_upload_is_accepted_as_fallback(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->user()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('photos.store'), [
+                'photo' => $this->fakePngDataUri(),
+                'title' => 'PNG Upload',
+            ]);
+
+        $photo = Photo::query()->first();
+
+        $this->assertNotNull($photo);
+        $response->assertRedirect(route('photos.show', $photo));
+        Storage::disk('public')->assertExists($photo->path);
+        $this->assertStringEndsWith('.png', $photo->path);
+        $this->assertStringNotContainsString('data:image/', $photo->path);
+    }
+
+    public function test_jpeg_upload_is_accepted_as_fallback(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->user()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('photos.store'), [
+                'photo' => $this->fakeJpegDataUri(),
+                'title' => 'JPEG Upload',
+            ]);
+
+        $photo = Photo::query()->first();
+
+        $this->assertNotNull($photo);
+        $response->assertRedirect(route('photos.show', $photo));
+        Storage::disk('public')->assertExists($photo->path);
+        $this->assertStringEndsWith('.jpg', $photo->path);
+        $this->assertStringNotContainsString('data:image/', $photo->path);
     }
 }

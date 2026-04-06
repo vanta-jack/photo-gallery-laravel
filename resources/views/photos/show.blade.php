@@ -12,7 +12,7 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2">
         <div class="bg-card text-card-foreground border border-border rounded p-4">
-            <img src="{{ asset('storage/' . $photo->path) }}" alt="{{ $photo->title }}" class="w-full max-h-[70vh] object-contain rounded border border-border bg-secondary">
+            <img src="{{ \Illuminate\Support\Facades\Storage::url($photo->path) }}" alt="{{ $photo->title }}" class="w-full max-h-[70vh] object-contain rounded border border-border bg-secondary">
         </div>
     </div>
 

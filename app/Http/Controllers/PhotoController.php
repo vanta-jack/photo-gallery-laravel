@@ -58,8 +58,8 @@ class PhotoController extends Controller
      * 
      * Flow:
      * 1. FormRequest validates input automatically before this method runs
-     * 2. Client has already cropped, resized, and converted to WebP
-     * 3. Store the processed WebP image
+     * 2. Client has already cropped and resized image
+     * 3. Store the processed image file (WebP preferred, PNG/JPEG fallback)
      * 4. Create database record with file path
      * 5. Redirect with success message
      */
@@ -67,20 +67,20 @@ class PhotoController extends Controller
     {
         $uploaderId = $this->resolveUploaderId($request->user());
 
-        // Get base64 WebP data from client-side processing
+        // Get base64 image data from client-side processing.
         $photoData = $request->input('photo');
-        
-        if (!is_string($photoData) || !str_starts_with($photoData, 'data:image/webp;base64,')) {
+
+        if (!is_string($photoData) || !$this->hasSupportedClientImageData($photoData)) {
             throw ValidationException::withMessages([
                 'photo' => 'Please select and process an image.',
             ]);
         }
 
-        // Store the already-processed WebP image
+        // Store the already-processed image file and keep only the file path in DB.
         $path = $imageProcessor->process($photoData);
         
         $customTitle = trim((string) $request->input('title', ''));
-        $title = $customTitle !== '' ? $customTitle : 'Cropped Photo';
+        $title = $customTitle !== '' ? $customTitle : 'Photo';
 
         $photo = Photo::create([
             'user_id' => $uploaderId,
@@ -121,6 +121,14 @@ class PhotoController extends Controller
             'password' => null,
             'profile_photo_id' => null,
         ])->id;
+    }
+
+    /**
+     * Validate client image payload format.
+     */
+    private function hasSupportedClientImageData(string $photoData): bool
+    {
+        return preg_match('/^data:image\/(webp|png|jpeg|jpg);base64,/', $photoData) === 1;
     }
 
     /**
@@ -172,14 +180,14 @@ class PhotoController extends Controller
         $data = $request->validated();
         unset($data['photo']);
 
-        // Check if a new photo was provided (base64 WebP from client)
+        // Check if a new photo was provided (base64 image from client).
         $photoData = $request->input('photo');
-        
-        if (is_string($photoData) && str_starts_with($photoData, 'data:image/webp;base64,')) {
+
+        if (is_string($photoData) && $this->hasSupportedClientImageData($photoData)) {
             // Delete old file from storage to prevent orphaned files
             Storage::disk('public')->delete($photo->path);
 
-            // Store the already-processed WebP image
+            // Store the already-processed image and keep path in DB.
             $data['path'] = $imageProcessor->process($photoData);
         }
 

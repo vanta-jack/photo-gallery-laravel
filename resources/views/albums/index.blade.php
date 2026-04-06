@@ -14,7 +14,7 @@
     @forelse($albums as $album)
         <div class="bg-card text-card-foreground border border-border rounded p-4">
             @if($album->coverPhoto)
-                <img src="{{ asset('storage/' . $album->coverPhoto->path) }}" alt="{{ $album->title }}" class="w-full h-48 object-cover rounded mb-3">
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($album->coverPhoto->path) }}" alt="{{ $album->title }}" class="w-full h-48 object-cover rounded mb-3">
             @else
                 <div class="w-full h-48 bg-secondary rounded mb-3 flex items-center justify-center text-muted-foreground">
                     📁 No cover

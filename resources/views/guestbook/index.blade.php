@@ -18,7 +18,7 @@
                 <p class="text-muted-foreground text-sm mb-4">{{ $entry->post->user->first_name ?? 'Guest' }} • {{ $entry->post->created_at->diffForHumans() }}</p>
             </div>
             @if($entry->photo)
-                <img src="{{ asset('storage/' . $entry->photo->path) }}" alt="Photo" class="w-24 h-24 object-cover rounded ml-4">
+                <img src="{{ \Illuminate\Support\Facades\Storage::url($entry->photo->path) }}" alt="Photo" class="w-24 h-24 object-cover rounded ml-4">
             @endif
         </div>
         <p class="text-foreground">{{ $entry->post->description }}</p>

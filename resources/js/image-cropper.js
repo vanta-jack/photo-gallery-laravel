@@ -1,134 +1,110 @@
-import Cropper from 'cropperjs';
-import imageCompression from 'browser-image-compression';
+const WEBP_MIME_TYPE = 'image/webp';
+const JPEG_MIME_TYPE = 'image/jpeg';
+const PNG_MIME_TYPE = 'image/png';
+
+const supportsWebPEncoding = () => {
+  const canvas = document.createElement('canvas');
+  if (typeof canvas.toDataURL !== 'function') {
+    return false;
+  }
+  return canvas.toDataURL(WEBP_MIME_TYPE).startsWith('data:image/webp;base64,');
+};
+
+const readAsDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = (e) => resolve(e.target.result);
+  reader.onerror = () => reject(new Error('Failed to read image'));
+  reader.readAsDataURL(file);
+});
+
+const convertToWebP = async (file) => {
+  const webpSupported = supportsWebPEncoding();
+  
+  // If WebP not supported, just return original file as data URL
+  if (!webpSupported) {
+    const dataUrl = await readAsDataUrl(file);
+    return { dataUrl, mimeType: file.type };
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      
+      canvas.toBlob(
+        async (blob) => {
+          if (blob) {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve({ dataUrl: e.target.result, mimeType: WEBP_MIME_TYPE });
+            reader.onerror = () => reject(new Error('Failed to convert to WebP'));
+            reader.readAsDataURL(blob);
+          } else {
+            reject(new Error('Canvas toBlob failed'));
+          }
+        },
+        WEBP_MIME_TYPE,
+        1.0
+      );
+    };
+    
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = URL.createObjectURL(file);
+  });
+};
 
 /**
- * Initialize image cropper on elements with [data-cropper] attribute.
- * 
- * Client-side image processing:
- * - Cropping with adjustable aspect ratio
- * - Automatic WebP conversion
- * - Compression and resizing (max 2048x2048)
- * - No backend processing needed
- * 
- * Usage in Blade:
- * <div data-cropper data-aspect-ratio="1">
- *   <input type="file" accept="image/*" />
- *   <div data-cropper-container class="hidden"></div>
- *   <input type="hidden" name="photo" data-cropper-result />
- * </div>
+ * Simple image upload with optional WebP conversion.
+ * If browser supports WebP encoding, converts to WebP at full quality.
+ * Otherwise, uploads original image format.
  */
 document.addEventListener('DOMContentLoaded', () => {
-  const cropperContainers = document.querySelectorAll('[data-cropper]');
+  const uploaders = document.querySelectorAll('[data-image-uploader]');
   
-  cropperContainers.forEach(container => {
+  uploaders.forEach((container) => {
     const fileInput = container.querySelector('input[type="file"]');
-    const cropperContainer = container.querySelector('[data-cropper-container]');
-    const hiddenInput = container.querySelector('[data-cropper-result]');
-    const aspectRatio = container.dataset.aspectRatio 
-      ? parseFloat(container.dataset.aspectRatio) 
-      : 0; // 0 = free aspect ratio
+    const hiddenInput = container.querySelector('[data-image-result]');
+    const form = container.closest('form');
     
-    let cropperElement = null;
-    let isSubmitting = false;
+    if (!fileInput || !hiddenInput || !form) return;
     
-    if (!fileInput || !cropperContainer || !hiddenInput) {
-      console.warn('Cropper container missing required elements');
-      return;
-    }
+    let isProcessing = false;
     
-    // When user selects a file, compress and show cropper
-    fileInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
+    form.addEventListener('submit', async (e) => {
+      if (isProcessing) return;
+      
+      const file = fileInput.files?.[0];
       if (!file) return;
       
-      // Validate it's an image
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file.');
-        return;
+      e.preventDefault();
+      isProcessing = true;
+      
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalText = submitButton?.textContent || 'Upload';
+      
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Processing...';
       }
       
       try {
-        // Compress and resize image before cropping
-        const options = {
-          maxSizeMB: 10, // Max file size 10MB
-          maxWidthOrHeight: 2048, // Max dimension 2048px
-          useWebWorker: true,
-          fileType: 'image/webp', // Convert to WebP
-          initialQuality: 0.85 // 85% quality
-        };
-        
-        const compressedFile = await imageCompression(file, options);
-        
-        // Convert compressed file to data URL for cropper
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          // Clear existing cropper
-          cropperContainer.innerHTML = '';
-          
-          // Create cropper element (web component)
-          cropperElement = document.createElement('cropper-canvas');
-          cropperElement.setAttribute('src', event.target.result);
-          if (aspectRatio > 0) {
-            cropperElement.setAttribute('aspect-ratio', aspectRatio);
-          }
-          
-          // Style the cropper
-          cropperElement.style.maxWidth = '100%';
-          cropperElement.style.maxHeight = '500px';
-          
-          cropperContainer.appendChild(cropperElement);
-          cropperContainer.classList.remove('hidden');
-        };
-        reader.readAsDataURL(compressedFile);
-        
+        const { dataUrl, mimeType } = await convertToWebP(file);
+        hiddenInput.value = dataUrl;
+        hiddenInput.dataset.mimeType = mimeType;
+        form.submit();
       } catch (error) {
-        console.error('Error processing image:', error);
-        alert('Failed to process image. Please try a different file.');
+        isProcessing = false;
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.textContent = originalText;
+        }
+        alert(`Failed to process image: ${error.message}`);
       }
     });
-    
-    // On form submit, get cropped canvas and convert to WebP
-    const form = container.closest('form');
-    if (form) {
-      form.addEventListener('submit', async (e) => {
-        if (isSubmitting) {
-          return;
-        }
-        if (cropperElement && cropperElement.$getCroppedCanvas) {
-          e.preventDefault(); // Prevent default to handle async processing
-          isSubmitting = true;
-          
-          const canvas = cropperElement.$getCroppedCanvas({
-            maxWidth: 2048,
-            maxHeight: 2048,
-            imageSmoothingEnabled: true,
-            imageSmoothingQuality: 'high',
-          });
-          
-          if (canvas) {
-            // Convert canvas to WebP blob
-            canvas.toBlob((blob) => {
-              if (!blob) {
-                hiddenInput.value = canvas.toDataURL('image/webp', 0.85);
-                form.submit();
-                return;
-              }
-
-              // Convert blob to data URL
-              const reader = new FileReader();
-              reader.onload = () => {
-                hiddenInput.value = reader.result;
-                // Now submit the form
-                form.submit();
-              };
-              reader.readAsDataURL(blob);
-            }, 'image/webp', 0.85); // WebP at 85% quality
-          } else {
-            isSubmitting = false;
-            form.submit(); // Submit anyway if canvas fails
-          }
-        }
-      });
-    }
   });
 });
