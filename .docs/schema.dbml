@@ -49,6 +49,7 @@ Table albums {
   title varchar [default: ""]
   description text [null]
   is_private boolean [default: false]
+  is_favorite boolean [default: false]
   created_at timestamp
   updated_at timestamp
 }

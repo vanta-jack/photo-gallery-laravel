@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * StoreAlbumRequest
@@ -29,11 +30,22 @@ class StoreAlbumRequest extends FormRequest
      */
     public function rules(): array
     {
+        $userId = $this->user()?->id;
+
         return [
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'is_private' => ['nullable', 'boolean'],
-            'cover_photo_id' => ['nullable', 'exists:photos,id'],
+            'cover_photo_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('photos', 'id')->where(static fn ($query) => $query->where('user_id', $userId)),
+            ],
+            'photo_ids' => ['nullable', 'array'],
+            'photo_ids.*' => [
+                'integer',
+                Rule::exists('photos', 'id')->where(static fn ($query) => $query->where('user_id', $userId)),
+            ],
         ];
     }
 }

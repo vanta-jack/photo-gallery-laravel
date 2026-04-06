@@ -150,3 +150,12 @@
   --radius-md: var(--radius);
   --radius-lg: var(--radius);
 }
+
+/* EasyMDE toolbar icons rendered with Lucide */
+.EasyMDEContainer .editor-toolbar button .lucide-icon {
+  width: 1rem;
+  height: 1rem;
+  display: block;
+  margin: 0 auto;
+  pointer-events: none;
+}

@@ -6,9 +6,9 @@ Summary of all proposal tickets created from `.tickets/active/004-site-implement
 
 | ID | Title | Priority | Status | Dependencies |
 |----|-------|----------|--------|--------------|
-| T001 | Brand Kit Foundation | High | Proposal | None |
-| T002 | Image Cropping (Frontend) | High | Proposal | T003 |
-| T003 | Image Processor (Backend) | High | Proposal | None |
+| T001 | Brand Kit Foundation | High | Resolved | None |
+| T002 | Image Cropping (Frontend) | High | Resolved | T003 |
+| T003 | Image Processor (Changed) | High | Resolved with subs | None |
 | T004 | Photo Slide Mode | Medium | Not Written | T001 |
 | T005 | Splash Page | Medium | Not Written | T001 |
 | T006 | Guestbook as Feed | Medium | Not Written | T001 |

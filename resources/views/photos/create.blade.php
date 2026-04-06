@@ -6,25 +6,44 @@
 <div class="bg-card text-card-foreground border border-border rounded p-6 max-w-2xl mx-auto">
     <h1 class="text-2xl font-bold text-foreground mb-6">Upload Photo</h1>
 
-    <form action="{{ route('photos.store') }}" method="POST">
+    <form action="{{ route('photos.store') }}" method="POST" data-photo-base64-form>
         @csrf
 
         <div class="space-y-6">
-            <x-image-cropper 
-                name="photo" 
-                label="Photo" 
-                :required="true"
-            />
+            <div class="space-y-4">
+                <label for="photo_file" class="block text-sm font-bold text-foreground">
+                    Photo <span class="text-destructive">*</span>
+                </label>
+
+                <input
+                    id="photo_file"
+                    type="file"
+                    accept="image/webp,image/png,image/jpeg"
+                    class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer hover:bg-card transition-colors"
+                    data-photo-file-input
+                    required
+                />
+
+                <input type="hidden" name="photo" value="{{ old('photo') }}" data-photo-base64-input />
+
+                <p class="hidden text-xs text-muted-foreground" data-photo-upload-status></p>
+                <p class="hidden text-destructive text-sm" data-photo-upload-error></p>
+
+                <p class="text-xs text-muted-foreground">
+                    Select a WebP, PNG, or JPEG image. The image is processed in your browser before upload.
+                </p>
+            </div>
+
             @error('photo')
                 <span class="text-destructive text-sm">{{ $message }}</span>
             @enderror
 
             <div>
                 <label for="title" class="block text-sm font-bold text-foreground mb-2">Title (Optional)</label>
-                <input 
-                    type="text" 
-                    id="title" 
-                    name="title" 
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
                     value="{{ old('title') }}"
                     class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                 />
@@ -36,10 +55,11 @@
 
             <div>
                 <label for="description" class="block text-sm font-bold text-foreground mb-2">Description</label>
-                <textarea 
-                    id="description" 
-                    name="description" 
+                <textarea
+                    id="description"
+                    name="description"
                     rows="4"
+                    data-markdown-editor
                     class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                 >{{ old('description') }}</textarea>
                 @error('description')

@@ -76,6 +76,16 @@ Route::middleware(['auth'])->group(function () {
     
     // Album CRUD (except index/show which are public)
     Route::resource('albums', AlbumController::class)->except(['index', 'show']);
+    Route::post('albums/photos', [AlbumController::class, 'storePhotoForCreate'])
+        ->name('albums.photos.create.store');
+    Route::post('albums/{album}/photos', [AlbumController::class, 'storePhoto'])
+        ->whereNumber('album')
+        ->name('albums.photos.store');
+    
+    // Album batch operations
+    Route::post('albums/batch/delete', [AlbumController::class, 'batchDelete'])->name('albums.batch.delete');
+    Route::post('albums/batch/visibility', [AlbumController::class, 'batchUpdateVisibility'])->name('albums.batch.visibility');
+    Route::post('albums/batch/favorite', [AlbumController::class, 'batchUpdateFavorite'])->name('albums.batch.favorite');
     
     // Post CRUD (except index/show which are public)
     Route::resource('posts', PostController::class)->except(['index', 'show']);

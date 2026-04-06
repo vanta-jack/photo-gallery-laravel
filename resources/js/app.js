@@ -1,3 +1,4 @@
 import './bootstrap';
 import './theme';
-import './image-cropper';
+import './photo-upload';
+import './markdown-editor';

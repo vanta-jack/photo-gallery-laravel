@@ -1,20 +1,24 @@
 @extends('layouts.app')
 
-@section('title', 'Create Album')
+@section('title', 'Edit Album')
 
 @section('content')
 @php
-    $selectedPhotoIds = collect(old('photo_ids', []))
+    $hasOldInput = session()->hasOldInput();
+    $selectedPhotoIds = collect($hasOldInput ? old('photo_ids', []) : $album->photos->pluck('id')->all())
         ->map(fn ($id) => (int) $id)
         ->all();
-    $selectedCoverPhotoId = old('cover_photo_id');
+
+    $coverPhotoOptions = $album->photos->concat($userPhotos)->unique('id')->values();
+    $selectedCoverPhotoId = $hasOldInput ? old('cover_photo_id') : $album->cover_photo_id;
 @endphp
 
 <div class="bg-card text-card-foreground border border-border rounded p-6 max-w-4xl mx-auto">
-    <h1 class="text-2xl font-bold text-foreground mb-6">Create Album</h1>
+    <h1 class="text-2xl font-bold text-foreground mb-6">Edit Album</h1>
 
-    <form action="{{ route('albums.store') }}" method="POST" id="createAlbumForm">
+    <form action="{{ route('albums.update', $album) }}" method="POST" id="editAlbumForm">
         @csrf
+        @method('PUT')
 
         <div class="space-y-6">
             <div>
@@ -23,7 +27,7 @@
                     type="text"
                     id="title"
                     name="title"
-                    value="{{ old('title') }}"
+                    value="{{ old('title', $album->title) }}"
                     required
                     class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                 >
@@ -40,74 +44,118 @@
                     rows="4"
                     data-markdown-editor
                     class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
-                >{{ old('description') }}</textarea>
+                >{{ old('description', $album->description) }}</textarea>
                 @error('description')
                     <span class="text-destructive text-sm mt-1 block">{{ $message }}</span>
                 @enderror
             </div>
 
             <div>
+                <input type="hidden" name="is_private" value="0">
                 <label class="flex items-center gap-2">
                     <input
                         type="checkbox"
                         name="is_private"
                         value="1"
-                        {{ old('is_private') ? 'checked' : '' }}
+                        {{ old('is_private', $album->is_private) ? 'checked' : '' }}
                         class="rounded border-input"
                     >
                     <span class="text-sm text-foreground">Make this album private</span>
                 </label>
             </div>
 
-            <div class="space-y-4 border-t border-border pt-6">
-                <div class="flex justify-between items-center mb-3 gap-3">
-                    <div>
-                        <h2 class="text-lg font-bold text-foreground mb-1">Select photos from your library</h2>
-                        <p class="text-sm text-muted-foreground">Choose photos to include in this new album.</p>
-                    </div>
-                    <button
-                        type="button"
-                        id="openAlbumUploadModal"
-                        class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150"
-                    >
-                        + Upload Photo
-                    </button>
-                </div>
+            <div class="space-y-6 border-t border-border pt-6">
+                <div>
+                    <h2 class="text-lg font-bold text-foreground mb-1">Currently in this album</h2>
+                    <p class="text-sm text-muted-foreground mb-3">Uncheck any photo to remove it.</p>
 
-                <p id="albumUploadSuccess" class="hidden text-xs text-emerald-600 mb-3"></p>
-
-                <div id="userPhotoLibraryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 {{ $userPhotos->isEmpty() ? 'hidden' : '' }}">
-                    @foreach($userPhotos as $photo)
-                        @php $isSelected = in_array($photo->id, $selectedPhotoIds, true); @endphp
-                        <div class="album-photo-card relative group rounded border p-1 transition-colors duration-150" data-photo-id="{{ $photo->id }}">
-                            <img
-                                src="{{ \Illuminate\Support\Facades\Storage::url($photo->path) }}"
-                                alt="{{ $photo->title }}"
-                                class="w-full h-32 object-cover rounded"
-                            >
-                            <div class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded" data-selection-badge>
-                                {{ $isSelected ? 'Selected' : 'Not selected' }}
-                            </div>
-                            <div class="absolute top-2 right-2">
-                                <label class="flex items-center cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        name="photo_ids[]"
-                                        value="{{ $photo->id }}"
-                                        {{ $isSelected ? 'checked' : '' }}
-                                        class="album-photo-checkbox w-5 h-5 rounded border-input bg-background checked:bg-primary"
+                    @if($album->photos->isNotEmpty())
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                            @foreach($album->photos as $photo)
+                                @php $isSelected = in_array($photo->id, $selectedPhotoIds, true); @endphp
+                                <div class="album-photo-card relative group rounded border p-1 transition-colors duration-150" data-photo-id="{{ $photo->id }}">
+                                    <img
+                                        src="{{ \Illuminate\Support\Facades\Storage::url($photo->path) }}"
+                                        alt="{{ $photo->title }}"
+                                        class="w-full h-32 object-cover rounded"
                                     >
-                                </label>
-                            </div>
-                            <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 rounded-b opacity-0 group-hover:opacity-100 transition-opacity">
-                                {{ $photo->title }}
-                            </div>
+                                    <div class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded" data-selection-badge>
+                                        {{ $isSelected ? 'Selected' : 'Not selected' }}
+                                    </div>
+                                    <div class="absolute top-2 right-2">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name="photo_ids[]"
+                                                value="{{ $photo->id }}"
+                                                {{ $isSelected ? 'checked' : '' }}
+                                                class="album-photo-checkbox w-5 h-5 rounded border-input bg-background checked:bg-primary"
+                                            >
+                                        </label>
+                                    </div>
+                                    <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 rounded-b opacity-0 group-hover:opacity-100 transition-opacity">
+                                        {{ $photo->title }}
+                                    </div>
+                                </div>
+                            @endforeach
                         </div>
-                    @endforeach
+                    @else
+                        <div class="bg-muted/50 border border-border rounded p-4 text-sm text-muted-foreground">
+                            This album has no photos yet.
+                        </div>
+                    @endif
                 </div>
 
-                <div id="userPhotoLibraryEmpty" class="bg-muted/50 border border-border rounded p-4 text-sm text-muted-foreground {{ $userPhotos->isEmpty() ? '' : 'hidden' }}">
-                    You don't have any photos yet. Upload one now or add photos later.
+                <div>
+                    <div class="flex justify-between items-center mb-3 gap-3">
+                        <div>
+                            <h2 class="text-lg font-bold text-foreground">Available from your library</h2>
+                            <p class="text-sm text-muted-foreground">Select photos to add them to this album.</p>
+                        </div>
+                        <button
+                            type="button"
+                            id="openAlbumUploadModal"
+                            class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150"
+                        >
+                            + Upload Photo
+                        </button>
+                    </div>
+
+                    <p id="albumUploadSuccess" class="hidden text-xs text-emerald-600 mb-3"></p>
+
+                    <div id="userPhotoLibraryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 {{ $userPhotos->isEmpty() ? 'hidden' : '' }}">
+                        @foreach($userPhotos as $photo)
+                            @php $isSelected = in_array($photo->id, $selectedPhotoIds, true); @endphp
+                            <div class="album-photo-card relative group rounded border p-1 transition-colors duration-150" data-photo-id="{{ $photo->id }}">
+                                <img
+                                    src="{{ \Illuminate\Support\Facades\Storage::url($photo->path) }}"
+                                    alt="{{ $photo->title }}"
+                                    class="w-full h-32 object-cover rounded"
+                                >
+                                <div class="absolute top-2 left-2 bg-black/70 text-white text-xs px-2 py-1 rounded" data-selection-badge>
+                                    {{ $isSelected ? 'Selected' : 'Not selected' }}
+                                </div>
+                                <div class="absolute top-2 right-2">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="photo_ids[]"
+                                            value="{{ $photo->id }}"
+                                            {{ $isSelected ? 'checked' : '' }}
+                                            class="album-photo-checkbox w-5 h-5 rounded border-input bg-background checked:bg-primary"
+                                        >
+                                    </label>
+                                </div>
+                                <div class="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 rounded-b opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {{ $photo->title }}
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div id="userPhotoLibraryEmpty" class="bg-muted/50 border border-border rounded p-4 text-sm text-muted-foreground {{ $userPhotos->isEmpty() ? '' : 'hidden' }}">
+                        No additional photos are available to add.
+                    </div>
                 </div>
 
                 @error('photo_ids')
@@ -125,7 +173,7 @@
                         class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring"
                     >
                         <option value="">No cover photo</option>
-                        @foreach($userPhotos as $photo)
+                        @foreach($coverPhotoOptions as $photo)
                             <option
                                 value="{{ $photo->id }}"
                                 {{ (string) $selectedCoverPhotoId === (string) $photo->id ? 'selected' : '' }}
@@ -142,8 +190,18 @@
             </div>
 
             <div class="flex gap-4 pt-6 border-t border-border">
-                <button type="submit" class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">Create Album</button>
-                <a href="{{ route('albums.index') }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150">Cancel</a>
+                <button
+                    type="submit"
+                    class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150"
+                >
+                    Update Album
+                </button>
+                <a
+                    href="{{ route('albums.show', $album) }}"
+                    class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150"
+                >
+                    Cancel
+                </a>
             </div>
         </div>
     </form>
@@ -156,7 +214,7 @@
             <button type="button" id="closeAlbumUploadModal" class="text-sm text-muted-foreground hover:text-foreground">Close</button>
         </div>
 
-        <form id="albumUploadForm" action="{{ route('albums.photos.create.store') }}" method="POST" data-photo-ajax-form>
+        <form id="albumUploadForm" action="{{ route('albums.photos.store', $album) }}" method="POST" data-photo-ajax-form>
             @csrf
 
             <div class="space-y-4">
@@ -410,7 +468,6 @@
             if (checkbox) {
                 checkbox.checked = true;
                 setCardSelectionState(checkbox);
-                addCoverPhotoOption(photo);
                 updateCoverPhotoOptions();
             }
             return;
@@ -525,7 +582,7 @@
             }
 
             appendUploadedPhoto(payload.photo);
-            uploadSuccess.textContent = 'Photo uploaded and selected. You can create your album now.';
+            uploadSuccess.textContent = 'Photo uploaded and selected. You can save album changes now.';
             uploadSuccess.classList.remove('hidden');
             closeModal({ resetForm: true });
         } catch {

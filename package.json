@@ -17,6 +17,8 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
-        "browser-image-compression": "^2.0.2"
+        "browser-image-compression": "^2.0.2",
+        "easymde": "^2.20.0",
+        "lucide": "^1.7.0"
     }
 }

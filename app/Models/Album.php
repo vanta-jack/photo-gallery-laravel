@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * Represents collections of photos grouped by the user.
  * Albums can be public or private, and have an optional cover photo.
  */
-#[Fillable(['user_id', 'cover_photo_id', 'title', 'description', 'is_private'])]
+#[Fillable(['user_id', 'cover_photo_id', 'title', 'description', 'is_private', 'is_favorite'])]
 class Album extends Model
 {
     /** @use HasFactory<\Database\Factories\AlbumFactory> */
@@ -27,6 +27,7 @@ class Album extends Model
     {
         return [
             'is_private' => 'boolean',
+            'is_favorite' => 'boolean',
         ];
     }
 
