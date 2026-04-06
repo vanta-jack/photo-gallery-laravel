@@ -41,6 +41,7 @@ Update these in the schema for the user
     - Name (already provided)
     - Phone Number - international format - must be toggleable from private to public
     - LinkedIn Profile - accept linkedin link
+  - Bio - can use markdown implementation here. use MDEase which is already available in the codebase here just reimplement that.
   - Academic history
     - Fully customizable template, user can add as many as they like
       - Institution/School - plaintext
