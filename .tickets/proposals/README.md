@@ -8,7 +8,7 @@ Summary of all proposal tickets created from `.tickets/active/004-site-implement
 |----|-------|----------|--------|--------------|
 | T001 | Brand Kit Foundation | High | Resolved | None |
 | T002 | Image Cropping (Frontend) | High | Resolved | T003 |
-| T003 | Image Processor (Changed) | High | Resolved with subs | None |
+| T003 | Image Processor (Changed) | High | Resolved, with subs | None |
 | T004 | Photo Slide Mode | Medium | Not Written | T001 |
 | T005 | Splash Page | Medium | Not Written | T001 |
 | T006 | Guestbook as Feed | Medium | Not Written | T001 |
@@ -38,10 +38,6 @@ Summary of all proposal tickets created from `.tickets/active/004-site-implement
 - **[T012-ai-generator.md](T012-ai-generator.md)** - Experimental Gemini image generation
 
 ## Tickets Not Yet Written (Summaries)
-
-## T003C: Gallery View fix
-
-Refer to []
 
 ### T004: Photo Slide Mode
 Fullscreen slideshow viewer with keyboard as well as touch screen button navigation. Toggle between grid and slideshow. Depends on T001 for styling.
