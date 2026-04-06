@@ -12,12 +12,15 @@
                 @endauth
             </div>
             <div class="flex gap-4 items-center">
-                <form action="{{ route('theme.toggle') }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
-                        Toggle Theme
-                    </button>
-                </form>
+                <button 
+                    id="theme-toggle" 
+                    type="button" 
+                    class="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150"
+                    title="Toggle theme (device/dark/light)"
+                    aria-label="Toggle theme preference"
+                >
+                    <span id="theme-indicator">☀️</span>
+                </button>
                 @auth
                     <a href="{{ route('profile.edit') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Profile</a>
                     <form action="{{ route('logout') }}" method="POST" class="inline">
@@ -34,3 +37,36 @@
         </div>
     </nav>
 </header>
+
+<script>
+    // Update theme indicator based on current state
+    function updateThemeIndicator() {
+        if (!window.themeManager) return;
+        
+        const state = window.themeManager.getCurrentState();
+        const indicators = {
+            'device': '🌐',  // Device preference
+            'dark': '🌙',    // Dark mode
+            'light': '☀️'    // Light mode
+        };
+        
+        const indicator = document.getElementById('theme-indicator');
+        if (indicator) {
+            indicator.textContent = indicators[state] || '🌐';
+        }
+    }
+
+    // Theme toggle click handler
+    document.addEventListener('DOMContentLoaded', () => {
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn && window.themeManager) {
+            toggleBtn.addEventListener('click', () => {
+                window.themeManager.toggle();
+                updateThemeIndicator();
+            });
+            
+            // Initial indicator
+            updateThemeIndicator();
+        }
+    });
+</script>

@@ -29,6 +29,148 @@ From `.tickets/active/004-site-implementations.md`:
 - VNT logo lockup in footer only (not header)
 - Dark mode default, toggleable
 
+## Active Issues
+
+```markdown
+# Illuminate\Foundation\ViteException - Internal Server Error
+
+Unable to locate file in Vite manifest: resources/js/theme.js.
+
+PHP 8.5.4
+Laravel 13.3.0
+192.168.254.103:8000
+
+## Stack Trace
+
+0 - vendor/laravel/framework/src/Illuminate/Foundation/Vite.php:999
+1 - vendor/laravel/framework/src/Illuminate/Foundation/Vite.php:390
+2 - resources/views/layouts/app.blade.php:7
+3 - vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php:123
+4 - vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php:124
+5 - vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php:57
+6 - vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php:76
+7 - vendor/laravel/framework/src/Illuminate/View/View.php:208
+8 - vendor/laravel/framework/src/Illuminate/View/View.php:191
+9 - vendor/laravel/framework/src/Illuminate/View/View.php:160
+10 - resources/views/guestbook/index.blade.php:35
+11 - vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php:123
+12 - vendor/laravel/framework/src/Illuminate/Filesystem/Filesystem.php:124
+13 - vendor/laravel/framework/src/Illuminate/View/Engines/PhpEngine.php:57
+14 - vendor/laravel/framework/src/Illuminate/View/Engines/CompilerEngine.php:76
+15 - vendor/laravel/framework/src/Illuminate/View/View.php:208
+16 - vendor/laravel/framework/src/Illuminate/View/View.php:191
+17 - vendor/laravel/framework/src/Illuminate/View/View.php:160
+18 - vendor/laravel/framework/src/Illuminate/Http/Response.php:78
+19 - vendor/laravel/framework/src/Illuminate/Http/Response.php:34
+20 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:939
+21 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:906
+22 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:821
+23 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+24 - vendor/laravel/boost/src/Middleware/InjectBoost.php:22
+25 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+26 - vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php:52
+27 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+28 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestForgery.php:104
+29 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+30 - vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php:48
+31 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+32 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:120
+33 - vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php:63
+34 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+35 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php:36
+36 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+37 - vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php:74
+38 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+39 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+40 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:821
+41 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:800
+42 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:764
+43 - vendor/laravel/framework/src/Illuminate/Routing/Router.php:753
+44 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:200
+45 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:180
+46 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php:21
+47 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php:31
+48 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+49 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php:21
+50 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php:51
+51 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+52 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePostSize.php:27
+53 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+54 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php:109
+55 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+56 - vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php:61
+57 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+58 - vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php:58
+59 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+60 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/InvokeDeferredCallbacks.php:22
+61 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+62 - vendor/laravel/framework/src/Illuminate/Http/Middleware/ValidatePathEncoding.php:28
+63 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:219
+64 - vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php:137
+65 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:175
+66 - vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php:144
+67 - vendor/laravel/framework/src/Illuminate/Foundation/Application.php:1220
+68 - public/index.php:20
+69 - vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php:23
+
+
+## Request
+
+GET /guestbook
+
+## Headers
+
+* **host**: 192.168.254.103:8000
+* **user-agent**: Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.1 Mobile/15E148 Safari/604.1
+* **upgrade-insecure-requests**: 1
+* **accept**: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+* **accept-language**: en-US,en;q=0.9
+* **priority**: u=0, i
+* **accept-encoding**: gzip, deflate
+* **cookie**: XSRF-TOKEN=eyJpdiI6Ik9ZWkRHdHNIb0FjSkxlNm8xSzA2dkE9PSIsInZhbHVlIjoiZHY2Myt1RDRIc0wvci9MbnhtZXd2N1kzYk1Vck9pa3RnYVVkK0RhcC9CTDJIa2ZmcCs2bHl0KzVMV21kbkt1bU5WYWxrcnllTytmTnN6Y3ZsRGhVc1JnYTE1dEtyTW8vSnFGdDR5aERydmc2ck9zcHVoZndwdlczNmh3WlZyeFEiLCJtYWMiOiI5MjQ1MTgyMmRhZGRmYTg4ODY2YTdiNTI3YTc4NWU1ZDk0ODgxOTk0NGFlNDQwY2Y0M2U1NzM1NGFkZWM1MmU4IiwidGFnIjoiIn0%3D; laravel-session=eyJpdiI6IklubCtvUGRDa2FaQUp1a3F1ZFlaY0E9PSIsInZhbHVlIjoiNUF6Q0xpVEZpLzNITnkxM0IyOVNWSWlGTG9DOHRiblRuZDc2L0tlUi93MEIxdmMwTlkzVitLWnQ0RGU5L2FpYXJ3MHVGcGMvNmhGYnhQdUd5cTY5TzZOckQ1WHVFc3NRRGFIY2pLMkNQemJkZ0tmdnpyaVNrTUdlc0YzYTd4UnMiLCJtYWMiOiJlZTg1ZTQ4ZDI0YmFmMmNlZGFkMDFkZTEwNmM2ODFkYmMzMDk4NTk4MWI5ZWI0N2RjYTk4YzhjNmUyNzRlOWM3IiwidGFnIjoiIn0%3D; theme=eyJpdiI6IklqdjVPWTcyRmRraU1HUEZTdmZQb1E9PSIsInZhbHVlIjoiWExEZnc5QVNKTlh5WWtpRkhSN3lFbzZZU0FqeXlCY3lOTTduYkVyZlZBd3FhMGR1RWJmQzVuZE1aUVJpUWl6YyIsIm1hYyI6IjYwNjU0MzlkOGNkMjQ5NjlhOTdkYzEyMDU1M2ZmMWZiZjI2NjUxNTgzYmQ4MmE1OGY3ZDRjNDVlNWY1OTI3ZjgiLCJ0YWciOiIifQ%3D%3D
+* **connection**: keep-alive
+
+## Route Context
+
+controller: App\Http\Controllers\GuestbookEntryController@index
+route name: guestbook.index
+middleware: web
+
+## Route Parameters
+
+No route parameter data available.
+
+## Database Queries
+
+* sqlite - select * from "sessions" where "id" = 'hCractEam2NpQRq0my1lgoTDpojoyMg90s9agtty' limit 1 (23.23 ms)
+* sqlite - select count(*) as aggregate from "guestbook_entries" (5.07 ms)
+* sqlite - select * from "guestbook_entries" order by "created_at" desc limit 20 offset 0 (3.62 ms)
+* sqlite - select * from "posts" where "posts"."id" in (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 31) (4.92 ms)
+* sqlite - select * from "users" where "users"."id" in (4, 5, 6, 8, 9, 11) (2.62 ms)
+* sqlite - select * from "photos" where "photos"."id" in (3, 5, 20, 32, 43, 44, 54) (4.45 ms)
+```
+
+### Resolution (2026-04-06)
+
+**Status:** Resolved
+
+**Root cause**
+- `resources/views/layouts/app.blade.php` referenced `resources/js/theme.js` directly in `@vite(...)`.
+- `vite.config.js` only declared `resources/css/app.css` and `resources/js/app.js` as build inputs.
+- In built mode, Laravel attempted to resolve `resources/js/theme.js` in `public/build/manifest.json` and threw `ViteException`.
+
+**Implemented fix (Laravel 13 + Vite standard)**
+1. Imported theme logic from the main app entrypoint:
+   - `resources/js/app.js` now includes `import './theme';`
+2. Removed standalone theme entry from Blade:
+   - `resources/views/layouts/app.blade.php` now uses `@vite(['resources/css/app.css', 'resources/js/app.js'])`
+
+**Result**
+- The app now follows the standard single-entry Vite pattern.
+- `theme.js` is bundled through `app.js`, eliminating the missing-manifest-entry failure path.
+- Device-specific dark mode behavior remains intact because the same ThemeManager code still executes from the app bundle.
+- `/guestbook` now renders successfully with app bundle assets and no `ViteException`.
+
 ## Implementation Steps
 
 ### 1. Download and Place Inter Font Files

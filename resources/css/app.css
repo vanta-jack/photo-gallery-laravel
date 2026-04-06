@@ -59,6 +59,45 @@
   --color-ring: #D4D4D8;
 }
 
+/* Light mode colors (explicit) */
+.light {
+  --color-background: #FAFAFA;
+  --color-foreground: #09090B;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #09090B;
+  --color-border: #E4E4E7;
+  --color-input: #E4E4E7;
+  --color-primary: #18181B;
+  --color-primary-foreground: #FAFAFA;
+  --color-secondary: #F4F4F5;
+  --color-secondary-foreground: #18181B;
+  --color-muted: #F4F4F5;
+  --color-muted-foreground: #71717A;
+  --color-destructive: #DC2626;
+  --color-ring: #09090B;
+}
+
+/* Media query support for device preference (when no explicit class is set) */
+@media (prefers-color-scheme: dark) {
+  /* Only apply if html doesn't have .light or .dark class */
+  html:not(.light):not(.dark) {
+    --color-background: #09090B;
+    --color-foreground: #FAFAFA;
+    --color-card: #18181B;
+    --color-card-foreground: #FAFAFA;
+    --color-border: #27272A;
+    --color-input: #27272A;
+    --color-primary: #FAFAFA;
+    --color-primary-foreground: #18181B;
+    --color-secondary: #27272A;
+    --color-secondary-foreground: #FAFAFA;
+    --color-muted: #27272A;
+    --color-muted-foreground: #A1A1AA;
+    --color-destructive: #EF4444;
+    --color-ring: #D4D4D8;
+  }
+}
+
 /* VNT Logo Lockup */
 .vnt-logo {
   display: inline-flex;
