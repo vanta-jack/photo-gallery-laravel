@@ -145,14 +145,17 @@
             @endauth
 
             @if($album->is_favorite)
-                <div class="text-yellow-500 mb-2" title="Favorite">⭐</div>
+                <div class="text-yellow-500 mb-2" title="Favorite">
+                    <x-icon name="star" class="w-5 h-5" />
+                </div>
             @endif
 
             @if($album->coverPhoto)
                 <img src="{{ \Illuminate\Support\Facades\Storage::url($album->coverPhoto->path) }}" alt="{{ $album->title }}" class="album-cover w-full h-48 object-cover rounded mb-3">
             @else
-                <div class="album-cover w-full h-48 bg-secondary rounded mb-3 flex items-center justify-center text-muted-foreground">
-                    📁 No cover
+                <div class="album-cover w-full h-48 bg-secondary rounded mb-3 flex items-center justify-center text-muted-foreground gap-2">
+                    <x-icon name="folder" class="w-5 h-5" />
+                    <span>No cover</span>
                 </div>
             @endif
 
@@ -160,14 +163,17 @@
             <p class="text-muted-foreground text-sm mb-2 album-author">by {{ $album->user->first_name ?? 'Unknown' }}</p>
 
             @if($album->is_private)
-                <span class="text-muted-foreground text-sm">🔒 Private</span>
+                <span class="text-muted-foreground text-sm flex items-center gap-1">
+                    <x-icon name="lock" class="w-4 h-4" />
+                    Private
+                </span>
             @endif
 
             <a href="{{ route('albums.show', $album) }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150 inline-block mt-3">View</a>
         </div>
     @empty
         <div class="col-span-full bg-card text-card-foreground border border-border rounded p-12 text-center">
-            <div class="text-6xl mb-4">📁</div>
+            <x-icon name="folder" class="w-24 h-24 mx-auto mb-4 text-muted-foreground" />
             <h3 class="text-xl font-bold text-foreground mb-2">No Albums Yet</h3>
             <p class="text-muted-foreground mb-6">Start organizing your photos by creating your first album!</p>
             @auth
@@ -178,7 +184,7 @@
 </div>
 
 <div id="emptySearchState" class="hidden col-span-full bg-card text-card-foreground border border-border rounded p-12 text-center">
-    <div class="text-6xl mb-4">🔍</div>
+    <x-icon name="search" class="w-24 h-24 mx-auto mb-4 text-muted-foreground" />
     <h3 class="text-xl font-bold text-foreground mb-2">No Albums Found</h3>
     <p class="text-muted-foreground">Try adjusting your search or filters</p>
 </div>

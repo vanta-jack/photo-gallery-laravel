@@ -17,7 +17,10 @@
         <p class="text-foreground mb-4">{{ Str::limit($post->description, 200) }}</p>
         <div class="flex items-center gap-4">
             <a href="{{ route('posts.show', $post) }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150">Read More</a>
-            <span class="text-muted-foreground text-sm">👍 {{ $post->votes_count ?? 0 }} likes</span>
+            <span class="text-muted-foreground text-sm flex items-center gap-1">
+                <x-icon name="thumbs-up" class="w-4 h-4" />
+                {{ $post->votes_count ?? 0 }} likes
+            </span>
         </div>
     </div>
 @empty

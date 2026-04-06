@@ -76,11 +76,13 @@
                     <dd class="text-foreground font-bold">
                         @if($album->is_private)
                             <span class="inline-flex items-center gap-1">
-                                🔒 Private
+                                <x-icon name="lock" class="w-4 h-4" />
+                                Private
                             </span>
                         @else
                             <span class="inline-flex items-center gap-1">
-                                🌐 Public
+                                <x-icon name="globe" class="w-4 h-4" />
+                                Public
                             </span>
                         @endif
                     </dd>
