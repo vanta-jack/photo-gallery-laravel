@@ -6,6 +6,17 @@ Table users {
   last_name varchar [null]
   password varchar [null, note: "hashed"]
   profile_photo_id bigint [null, ref: > photos.id]
+  bio text [null, note: "Professional summary/CV bio"]
+  phone varchar(20) [null, note: "International format phone number"]
+  phone_public boolean [default: false, note: "Phone visibility toggle"]
+  linkedin varchar [null, note: "LinkedIn profile URL"]
+  academic_history json [null, note: "Array of education entries"]
+  professional_experience json [null, note: "Array of work history entries"]
+  skills json [null, note: "Array of skill strings"]
+  certifications json [null, note: "Array of certification objects"]
+  orcid_id varchar(50) [null, note: "ORCID identifier"]
+  github varchar [null, note: "GitHub profile URL"]
+  other_links json [null, note: "Array of additional profile links"]
   created_at timestamp
   updated_at timestamp
 }

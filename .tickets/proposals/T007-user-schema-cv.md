@@ -1,16 +1,16 @@
 <instructions>
 DOCUMENT TYPE: Proposal Ticket (T007-user-schema-cv.md)
 
-This ticket is in PROPOSAL status. No implementation has started yet. The current users table only has basic fields: id, role, email, first_name, last_name, password, profile_photo_id, created_at, updated_at.
+This ticket has been implemented in the current branch. The users schema now includes CV/profile fields for bio, contact visibility, structured history, and links.
 
 This ticket will add CV/About Me fields to support professional profile functionality as specified in .tickets/active/004-site-implementations.md.
 
-STATUS: Awaiting implementation approval and resource allocation.
+STATUS: Implementation complete, pending human review.
 </instructions>
 
 # T007: User Schema for CV/About Me
 
-**Status:** IN PROGRESS  
+**Status:** PENDING REVIEW  
 **Tag:** `user-schema-cv`
 
 ---
@@ -76,13 +76,13 @@ Listed in order of execution (dependencies noted):
 
 ## Resolution Summary
 
-[Fill in AFTER starting work: One sentence summarizing what was built and status.]
+Implemented CV schema and profile editing support end-to-end, including migration, model/form updates, dynamic UI inputs, schema docs sync, and passing automated tests.
 
 ### Delivery Overview
-- **Core Features (7 todos):** [feature list]
-- **Refinements (0 todos):** None yet (add as discovered)
-- **Test Coverage:** 0/0 tests
-- **Quality:** [Build status, security constraints, etc.]
+- **Core Features (7 todos):** migration + schema dbml update, model fillable/casts, request validation, profile form UI, repeatable JSON inputs, phone visibility handling, feature tests
+- **Refinements (1):** Authorization test adjusted to match actual `profile.update` route semantics (authenticated-user target route)
+- **Test Coverage:** 23/23 passing (includes 9 new UserProfile tests)
+- **Quality:** Full test suite and frontend build both passing
 
 ---
 

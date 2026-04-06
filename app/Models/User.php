@@ -14,9 +14,27 @@ use Illuminate\Notifications\Notifiable;
  * User Model
  * 
  * Represents users in the photo gallery application with three roles: guest, user, admin.
- * Supports authentication, photo ownership, albums, posts, and social interactions.
+ * Supports authentication, photo ownership, albums, posts, CV/professional profile, and social interactions.
  */
-#[Fillable(['role', 'email', 'first_name', 'last_name', 'password', 'profile_photo_id'])]
+#[Fillable([
+    'role',
+    'email',
+    'first_name',
+    'last_name',
+    'password',
+    'profile_photo_id',
+    'bio',
+    'phone',
+    'phone_public',
+    'linkedin',
+    'academic_history',
+    'professional_experience',
+    'skills',
+    'certifications',
+    'orcid_id',
+    'github',
+    'other_links',
+])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -30,7 +48,13 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'password' => 'hashed', // Automatically hashes password on save
+            'password' => 'hashed',
+            'phone_public' => 'boolean',
+            'academic_history' => 'array',
+            'professional_experience' => 'array',
+            'skills' => 'array',
+            'certifications' => 'array',
+            'other_links' => 'array',
         ];
     }
 
