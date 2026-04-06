@@ -33,7 +33,24 @@ Summary of all proposal tickets created from `.tickets/active/004-site-implement
 - **[T003-image-processor.md](T003-image-processor.md)** - WebP conversion, metadata strip, compression
 
 ### Feature Tier
-- **[T007-user-schema-cv.md](T007-user-schema-cv.md)** - CV fields for About Me functionality
+- **[T007-user-schema-cv.md](T007-user-schema-cv.md)** - CV fields for About Me functionality.
+
+Update these in the schema for the user
+  - Expertise Field: Use a long list of possible expertise publicly sourced library and just let user type and select like tag selection.
+  - Contact information
+    - Name (already provided)
+    - Phone Number - international format - must be toggleable from private to public
+    - LinkedIn Profile - accept linkedin link
+  - Academic history
+    - Fully customizable template, user can add as many as they like
+      - Institution/School - plaintext
+      - Degree - Senior High School, Associate, Undergraduate Program, etc.
+      - Professional Experience - template fully customizable and can add as much as they like
+        - standard work history forms and accomplishments
+        - automatically sorted in reverse order upon hitting update profile
+      - Skills & Qualifications - users can type like tags which can give auto-suggestions. when it does not exist accept user input.
+      - Optionals
+        - uploaded photo for certifications, ORCID ID, GitHub profile, other links
 - **[T010-admin-dashboard.md](T010-admin-dashboard.md)** - User analytics for admins
 - **[T012-ai-generator.md](T012-ai-generator.md)** - Experimental Gemini image generation
 
