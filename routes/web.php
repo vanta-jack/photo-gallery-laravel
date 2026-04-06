@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\GuestbookEntryController;
 use App\Http\Controllers\MilestoneController;
 use App\Http\Controllers\PhotoCommentController;
@@ -8,6 +10,7 @@ use App\Http\Controllers\PhotoController;
 use App\Http\Controllers\PhotoRatingController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostVoteController;
+use App\Http\Controllers\ThemeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +27,18 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('dashboard');
 })->name('home');
+
+/**
+ * Authentication Routes
+ */
+Route::middleware(['guest'])->group(function () {
+    Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('login', [LoginController::class, 'login']);
+    Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+    Route::post('register', [RegisterController::class, 'register']);
+});
+
+Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
 
 /**
  * Public Routes (no auth required)
@@ -80,5 +95,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('profile/edit', [UserController::class, 'edit'])->name('profile.edit');
     Route::put('profile', [UserController::class, 'update'])->name('profile.update');
 });
+
+// Theme toggle (available to all users, authenticated or not)
+Route::post('/theme/toggle', [ThemeController::class, 'toggle'])->name('theme.toggle');
 
 

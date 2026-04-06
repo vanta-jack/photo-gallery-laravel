@@ -3,41 +3,41 @@
 @section('title', 'Photo Gallery - Home')
 
 @section('content')
-<div class="card mb-2">
-    <h1>Welcome to Photo Gallery</h1>
-    <p class="text-muted">A social photo sharing platform built with Laravel 13</p>
+<div class="bg-card text-card-foreground border border-border rounded p-6 mb-8">
+    <h1 class="text-3xl font-bold text-foreground mb-2">Welcome to Photo Gallery</h1>
+    <p class="text-muted-foreground">A social photo sharing platform built with Laravel 13</p>
 </div>
 
-<div class="grid grid-2">
-    <div class="card">
-        <h2>📸 Photos</h2>
-        <p>Browse and upload photos</p>
-        <a href="{{ route('photos.index') }}" class="btn">View Photos</a>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="bg-card text-card-foreground border border-border rounded p-6">
+        <h2 class="text-xl font-bold text-foreground mb-2">📸 Photos</h2>
+        <p class="text-foreground mb-4">Browse and upload photos</p>
+        <a href="{{ route('photos.index') }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150 inline-block">View Photos</a>
     </div>
 
-    <div class="card">
-        <h2>📁 Albums</h2>
-        <p>Organize photos into collections</p>
-        <a href="{{ route('albums.index') }}" class="btn">View Albums</a>
+    <div class="bg-card text-card-foreground border border-border rounded p-6">
+        <h2 class="text-xl font-bold text-foreground mb-2">📁 Albums</h2>
+        <p class="text-foreground mb-4">Organize photos into collections</p>
+        <a href="{{ route('albums.index') }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150 inline-block">View Albums</a>
     </div>
 
-    <div class="card">
-        <h2>📝 Posts</h2>
-        <p>Share thoughts and updates</p>
-        <a href="{{ route('posts.index') }}" class="btn">View Posts</a>
+    <div class="bg-card text-card-foreground border border-border rounded p-6">
+        <h2 class="text-xl font-bold text-foreground mb-2">📝 Posts</h2>
+        <p class="text-foreground mb-4">Share thoughts and updates</p>
+        <a href="{{ route('posts.index') }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150 inline-block">View Posts</a>
     </div>
 
-    <div class="card">
-        <h2>✍️ Guestbook</h2>
-        <p>Leave a message for visitors</p>
-        <a href="{{ route('guestbook.index') }}" class="btn">View Guestbook</a>
+    <div class="bg-card text-card-foreground border border-border rounded p-6">
+        <h2 class="text-xl font-bold text-foreground mb-2">✍️ Guestbook</h2>
+        <p class="text-foreground mb-4">Leave a message for visitors</p>
+        <a href="{{ route('guestbook.index') }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150 inline-block">View Guestbook</a>
     </div>
 
     @auth
-    <div class="card">
-        <h2>🎯 Milestones</h2>
-        <p>Track important life events</p>
-        <a href="{{ route('milestones.index') }}" class="btn">View Milestones</a>
+    <div class="bg-card text-card-foreground border border-border rounded p-6">
+        <h2 class="text-xl font-bold text-foreground mb-2">🎯 Milestones</h2>
+        <p class="text-foreground mb-4">Track important life events</p>
+        <a href="{{ route('milestones.index') }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150 inline-block">View Milestones</a>
     </div>
     @endauth
 </div>

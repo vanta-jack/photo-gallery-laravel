@@ -5,7 +5,109 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* Inter font declarations */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter/inter-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/inter/inter-700.woff2') format('woff2');
+}
+
+/* Light mode colors (default in :root for fallback) */
+:root {
+  --color-background: #FAFAFA;
+  --color-foreground: #09090B;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #09090B;
+  --color-border: #E4E4E7;
+  --color-input: #E4E4E7;
+  --color-primary: #18181B;
+  --color-primary-foreground: #FAFAFA;
+  --color-secondary: #F4F4F5;
+  --color-secondary-foreground: #18181B;
+  --color-muted: #F4F4F5;
+  --color-muted-foreground: #71717A;
+  --color-destructive: #DC2626;
+  --color-ring: #09090B;
+  --radius: 2px;
+}
+
+/* Dark mode colors */
+.dark {
+  --color-background: #09090B;
+  --color-foreground: #FAFAFA;
+  --color-card: #18181B;
+  --color-card-foreground: #FAFAFA;
+  --color-border: #27272A;
+  --color-input: #27272A;
+  --color-primary: #FAFAFA;
+  --color-primary-foreground: #18181B;
+  --color-secondary: #27272A;
+  --color-secondary-foreground: #FAFAFA;
+  --color-muted: #27272A;
+  --color-muted-foreground: #A1A1AA;
+  --color-destructive: #EF4444;
+  --color-ring: #D4D4D8;
+}
+
+/* VNT Logo Lockup */
+.vnt-logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.vnt-wordmark {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 3rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--color-foreground);
+}
+
+.vnt-sub {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--color-foreground);
+  width: 100%;
+  display: block;
+  letter-spacing: 0.43em;
+}
+
+/* Tailwind 4 theme extensions */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-foreground);
+  --color-card: var(--color-card);
+  --color-card-foreground: var(--color-card-foreground);
+  --color-border: var(--color-border);
+  --color-input: var(--color-input);
+  --color-primary: var(--color-primary);
+  --color-primary-foreground: var(--color-primary-foreground);
+  --color-secondary: var(--color-secondary);
+  --color-secondary-foreground: var(--color-secondary-foreground);
+  --color-muted: var(--color-muted);
+  --color-muted-foreground: var(--color-muted-foreground);
+  --color-destructive: var(--color-destructive);
+  --color-ring: var(--color-ring);
+  
+  --radius: 2px;
+  --radius-sm: var(--radius);
+  --radius-md: var(--radius);
+  --radius-lg: var(--radius);
 }
