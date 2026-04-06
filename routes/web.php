@@ -46,13 +46,21 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middl
  * These routes allow anyone to browse content
  */
 Route::get('photos', [PhotoController::class, 'index'])->name('photos.index');
-Route::get('photos/{photo}', [PhotoController::class, 'show'])->name('photos.show');
+Route::get('photos/create', [PhotoController::class, 'create'])->name('photos.create');
+Route::post('photos', [PhotoController::class, 'store'])->name('photos.store');
+Route::get('photos/{photo}', [PhotoController::class, 'show'])
+    ->whereNumber('photo')
+    ->name('photos.show');
 
 Route::get('albums', [AlbumController::class, 'index'])->name('albums.index');
-Route::get('albums/{album}', [AlbumController::class, 'show'])->name('albums.show');
+Route::get('albums/{album}', [AlbumController::class, 'show'])
+    ->whereNumber('album')
+    ->name('albums.show');
 
 Route::get('posts', [PostController::class, 'index'])->name('posts.index');
-Route::get('posts/{post}', [PostController::class, 'show'])->name('posts.show');
+Route::get('posts/{post}', [PostController::class, 'show'])
+    ->whereNumber('post')
+    ->name('posts.show');
 
 Route::get('guestbook', [GuestbookEntryController::class, 'index'])->name('guestbook.index');
 
@@ -64,7 +72,7 @@ Route::get('guestbook', [GuestbookEntryController::class, 'index'])->name('guest
 Route::middleware(['auth'])->group(function () {
     
     // Photo CRUD (except index/show which are public)
-    Route::resource('photos', PhotoController::class)->except(['index', 'show']);
+    Route::resource('photos', PhotoController::class)->except(['index', 'show', 'create', 'store']);
     
     // Album CRUD (except index/show which are public)
     Route::resource('albums', AlbumController::class)->except(['index', 'show']);
@@ -98,5 +106,3 @@ Route::middleware(['auth'])->group(function () {
 
 // Theme toggle (available to all users, authenticated or not)
 Route::post('/theme/toggle', [ThemeController::class, 'toggle'])->name('theme.toggle');
-
-

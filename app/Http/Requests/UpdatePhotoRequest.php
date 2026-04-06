@@ -21,8 +21,8 @@ class UpdatePhotoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'sometimes' means only validate if the field is present
-            'photo' => ['sometimes', 'image', 'max:5120'],
+            // 'nullable' allows metadata-only updates; otherwise expect WebP base64
+            'photo' => ['nullable', 'string', 'regex:/^data:image\/webp;base64,/'],
             'title' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
         ];

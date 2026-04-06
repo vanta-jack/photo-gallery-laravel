@@ -5,9 +5,7 @@
 @section('content')
 <div class="flex justify-between items-center mb-8">
     <h1 class="text-2xl font-bold text-foreground">Photos</h1>
-    @auth
-        <a href="{{ route('photos.create') }}" class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">Upload Photo</a>
-    @endauth
+    <a href="{{ route('photos.create') }}" class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">Upload Photo</a>
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

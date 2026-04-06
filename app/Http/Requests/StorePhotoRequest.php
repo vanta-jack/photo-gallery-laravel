@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 /**
  * StorePhotoRequest
@@ -24,24 +23,34 @@ class StorePhotoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        // Best Practice: Use policies for complex authorization
-        return $this->user() !== null;
+        return true;
     }
 
     /**
      * Get the validation rules that apply to the request.
      * 
      * Rules explained:
-     * - 'photo': Must be an uploaded file, image type, max 5MB
-     * - 'title': Required string, max 255 chars
+     * - 'photo': Client-processed WebP base64 string
+     * - 'title': Optional string, max 255 chars
      * - 'description': Optional text
      */
     public function rules(): array
     {
         return [
-            'photo' => ['required', 'image', 'max:5120'], // 5MB max
-            'title' => ['required', 'string', 'max:255'],
+            'photo' => ['required', 'string', 'regex:/^data:image\/webp;base64,/'],
+            'title' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
+        ];
+    }
+
+    /**
+     * Custom validation messages for upload failures.
+     */
+    public function messages(): array
+    {
+        return [
+            'photo.required' => 'Please select and process an image before uploading.',
+            'photo.regex' => 'Photo must be a WebP image processed on your device.',
         ];
     }
 
@@ -52,7 +61,7 @@ class StorePhotoRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'photo' => 'photo file',
+            'photo' => 'photo',
         ];
     }
 }

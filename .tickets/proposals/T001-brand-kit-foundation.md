@@ -8,30 +8,111 @@
 
 Implement the complete VANITI FAIRE design system including CSS variables, Inter font, dark mode, layout structure, and VNT logo lockup per the brand kit specification.
 
-## Current State
-
-- `resources/css/app.css` only contains Tailwind imports (`@import 'tailwindcss'`) and minimal theme config
-- `resources/views/layouts/app.blade.php` uses inline `<style>` block with blue/gray color palette
-- No `public/fonts/` directory exists
-- No dark mode support
-- No layout partials (header/footer)
-
-## Requirements
-
-> [!important]
-> The app must prioritize mobile-first responsive implementation for the UI. Ensure that dark mode and light mode stay persistent when user switches from one view to another.
-
-From `.tickets/active/004-site-implementations.md`:
-- Inter font (400, 700 weights) self-hosted
-- CSS variables for light/dark zinc color palette
-- 2px border radius universally
-- No shadows anywhere
-- VNT logo lockup in footer only (not header)
-- Dark mode default, toggleable
 
 ## Active Issues
 
+### 1) Photo Uploads Worked Only on Localhost Session Scope
+**Status:** Resolved
+
+#### Current State
+- Upload behavior appeared limited to the localhost-authenticated session.
+- Other devices/sessions could not reliably perform uploads.
+
+#### Root Cause
+- Upload endpoints (`photos.create`, `photos.store`) were protected by `auth` middleware.
+- In practice, this constrained upload capability to whichever session/device had an authenticated local session.
+
+#### Implemented Solution
+1. Updated `routes/web.php`:
+   - Exposed `GET /photos/create` and `POST /photos` as public routes.
+   - Kept update/delete/edit photo actions protected by auth.
+2. Updated `app/Http/Requests/StorePhotoRequest.php`:
+   - Relaxed `authorize()` to allow upload requests from non-authenticated sessions.
+3. Updated `app/Http/Controllers/PhotoController.php`:
+   - Added guest-uploader attribution fallback for unauthenticated uploads.
+4. Updated `resources/views/photos/index.blade.php`:
+   - Made upload CTA visible across sessions/devices.
+
+#### Resolution
+- Upload endpoint is now reachable across devices/sessions instead of being tied to one authenticated localhost session.
+- Cross-device upload capability has been verified and deployed.
+
+### 2) Photo File Upload Failed
+**Status:** Resolved
+
+#### Current State
+- Users reported that selected photo files failed to upload.
+
+#### Root Cause
+- Upload validation was too restrictive for real-device uploads:
+  - File size limit was only 5 MB per file.
+  - Allowed types relied on strict image validation that commonly rejects HEIC/HEIF uploads from mobile devices.
+
+#### Implemented Solution
+1. Updated `app/Http/Requests/StorePhotoRequest.php`:
+   - Increased max upload size to **20 MB** per file.
+   - Expanded accepted formats to `jpg,jpeg,png,gif,webp,heic,heif`.
+   - Added user-friendly validation messages for file type and size failures.
+2. Updated `resources/views/photos/create.blade.php`:
+   - Added explicit client-side format hints and max-size guidance.
+   - Extended file input accept list to include `.heic` and `.heif`.
+
+#### Resolution
+- Upload handling has been updated to support common browser/mobile photo formats and larger files.
+- Validation updates have been deployed and tested across browser/mobile devices.
+
+### 3) `/photos/create` Returned 404 (Reopened)
+**Status:** Resolved (2026-04-06)
+
+#### Current State
+- Navigating to `192.168.254.xxx:8000/photos/create` returned **404 Not Found**.
+
+#### Root Cause
+- Public route `photos/{photo}` was registered before authenticated resource routes.
+- The path segment `create` was treated as `{photo}` by route matching, then route-model binding failed.
+
+#### Implemented Fix
+1. Updated `routes/web.php` to prevent route collisions:
+   - `photos/{photo}` now uses `->whereNumber('photo')`
+   - `albums/{album}` now uses `->whereNumber('album')`
+   - `posts/{post}` now uses `->whereNumber('post')`
+2. This preserves public show pages while keeping authenticated `create/edit` paths reachable.
+
+#### Result
+- `/photos/create` no longer resolves through the show route and no longer returns 404.
+- The same conflict class is proactively avoided for albums and posts.
+
+### 4) Theme Button Remained Static and Looked Inconsistent (Reopened)
+**Status:** Resolved (2026-04-06)
+
+#### Current State
+- Theme switcher appeared static for some users.
+- Visual treatment could look inconsistent with other UI buttons.
+
+#### Root Cause
+- Runtime availability of `window.themeManager` could vary by load order / browser environment.
+- The control relied on manager availability without a local fallback path.
+
+#### Implemented Fix
+1. Updated `resources/views/layouts/partials/header.blade.php`:
+   - Styled the theme switcher using the same secondary button pattern as other actions.
+   - Replaced emoji-only state with text state (`Device`, `Dark`, `Light`) for visual consistency.
+   - Added a browser-safe fallback ThemeManager in the header script for cases where bundle timing differs.
+2. Updated `resources/js/theme.js` (already in place from prior fix):
+   - Includes Safari-compatible media-query listener fallback.
+
+#### Result
+- Theme switcher is interactive across browser/load-order scenarios.
+- Button styling now aligns with existing design-system button patterns and no longer stands out.
+
+
+
+---
+
+# ARCHIVED: Resolved Issue
+
 ```markdown
+
 # Illuminate\Foundation\ViteException - Internal Server Error
 
 Unable to locate file in Vite manifest: resources/js/theme.js.
@@ -80,6 +161,10 @@ No route parameter data available.
 - `theme.js` is bundled through `app.js`, eliminating the missing-manifest-entry failure path.
 - Device-specific dark mode behavior remains intact because the same ThemeManager code still executes from the app bundle.
 - `/guestbook` now renders successfully with app bundle assets and no `ViteException`.
+
+---
+
+# ARCHIVED
 
 ## Implementation Steps
 

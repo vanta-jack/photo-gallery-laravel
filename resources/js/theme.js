@@ -121,23 +121,40 @@ class ThemeManager {
         if (!window.matchMedia) return;
 
         const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        
-        // Handle changes to system preference
-        darkModeQuery.addEventListener('change', (e) => {
+
+        const handleSystemChange = (e) => {
             // Only apply if user is not overriding (savedTheme is null)
             if (this.getSavedTheme() === null) {
                 const newSystemTheme = e.matches ? this.DARK_CLASS : this.LIGHT_CLASS;
                 this.applyTheme(newSystemTheme);
             }
-        });
+        };
+
+        // Modern browsers
+        if (typeof darkModeQuery.addEventListener === 'function') {
+            darkModeQuery.addEventListener('change', handleSystemChange);
+            return;
+        }
+
+        // Safari fallback
+        if (typeof darkModeQuery.addListener === 'function') {
+            darkModeQuery.addListener(handleSystemChange);
+        }
     }
+}
+
+function initializeThemeManager() {
+    if (window.themeManager) {
+        return;
+    }
+
+    window.themeManager = new ThemeManager();
+    window.dispatchEvent(new CustomEvent('theme-manager:ready'));
 }
 
 // Initialize theme manager when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.themeManager = new ThemeManager();
-    });
+    document.addEventListener('DOMContentLoaded', initializeThemeManager);
 } else {
-    window.themeManager = new ThemeManager();
+    initializeThemeManager();
 }

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Photo;
+use App\Models\User;
+use App\Services\ImageProcessor;
 use App\Http\Requests\StorePhotoRequest;
 use App\Http\Requests\UpdatePhotoRequest;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
@@ -55,30 +58,69 @@ class PhotoController extends Controller
      * 
      * Flow:
      * 1. FormRequest validates input automatically before this method runs
-     * 2. Store uploaded file using Laravel's Storage facade
-     * 3. Create database record with file path
-     * 4. Redirect with success message
+     * 2. Client has already cropped, resized, and converted to WebP
+     * 3. Store the processed WebP image
+     * 4. Create database record with file path
+     * 5. Redirect with success message
      */
-    public function store(StorePhotoRequest $request): RedirectResponse
+    public function store(StorePhotoRequest $request, ImageProcessor $imageProcessor): RedirectResponse
     {
-        // Store the uploaded file in the 'public' disk
-        // Returns path like: "photos/abc123.jpg"
-        // The 'public' disk is configured in config/filesystems.php
-        $path = $request->file('photo')->store('photos', 'public');
+        $uploaderId = $this->resolveUploaderId($request->user());
 
-        // Create the photo record
-        // Using create() requires fillable fields in the Model (which Photo has)
+        // Get base64 WebP data from client-side processing
+        $photoData = $request->input('photo');
+        
+        if (!is_string($photoData) || !str_starts_with($photoData, 'data:image/webp;base64,')) {
+            throw ValidationException::withMessages([
+                'photo' => 'Please select and process an image.',
+            ]);
+        }
+
+        // Store the already-processed WebP image
+        $path = $imageProcessor->process($photoData);
+        
+        $customTitle = trim((string) $request->input('title', ''));
+        $title = $customTitle !== '' ? $customTitle : 'Cropped Photo';
+
         $photo = Photo::create([
-            'user_id' => $request->user()->id, // Associate with authenticated user
+            'user_id' => $uploaderId,
             'path' => $path,
-            'title' => $request->title,
-            'description' => $request->description,
+            'title' => $title,
+            'description' => $request->input('description'),
         ]);
 
-        // Redirect to the photo show page with a flash message
         return redirect()
             ->route('photos.show', $photo)
             ->with('status', 'Photo uploaded successfully!');
+    }
+
+    /**
+     * Resolve the uploader account used for incoming uploads.
+     * Guest uploads are attributed to a reusable guest uploader account.
+     */
+    private function resolveUploaderId(?User $user): int
+    {
+        if ($user !== null) {
+            return $user->id;
+        }
+
+        $guestUploader = User::query()
+            ->where('role', 'guest')
+            ->whereNull('email')
+            ->first();
+
+        if ($guestUploader !== null) {
+            return $guestUploader->id;
+        }
+
+        return User::create([
+            'role' => 'guest',
+            'email' => null,
+            'first_name' => 'Guest',
+            'last_name' => 'Uploader',
+            'password' => null,
+            'profile_photo_id' => null,
+        ])->id;
     }
 
     /**
@@ -118,28 +160,30 @@ class PhotoController extends Controller
      * Update the specified photo in storage.
      * 
      * Handles both metadata updates and optional file replacement.
-     * If a new file is uploaded, the old file is deleted to save space.
+     * If a new photo is uploaded, the old file is deleted to save space.
+     * Client handles all image processing (WebP conversion, resizing, compression).
      */
-    public function update(UpdatePhotoRequest $request, Photo $photo): RedirectResponse
+    public function update(UpdatePhotoRequest $request, Photo $photo, ImageProcessor $imageProcessor): RedirectResponse
     {
         // Authorization - same as edit()
         $this->authorize('update', $photo);
 
         // Prepare data array for update
         $data = $request->validated();
+        unset($data['photo']);
 
-        // Check if a new photo was uploaded
-        if ($request->hasFile('photo')) {
+        // Check if a new photo was provided (base64 WebP from client)
+        $photoData = $request->input('photo');
+        
+        if (is_string($photoData) && str_starts_with($photoData, 'data:image/webp;base64,')) {
             // Delete old file from storage to prevent orphaned files
-            // Storage::delete() is safe even if file doesn't exist
             Storage::disk('public')->delete($photo->path);
 
-            // Store new file
-            $data['path'] = $request->file('photo')->store('photos', 'public');
+            // Store the already-processed WebP image
+            $data['path'] = $imageProcessor->process($photoData);
         }
 
         // Update the model
-        // update() only modifies fields present in $data
         $photo->update($data);
 
         return redirect()
@@ -171,4 +215,3 @@ class PhotoController extends Controller
             ->with('status', 'Photo deleted successfully!');
     }
 }
-
