@@ -14,164 +14,544 @@ Use this documenent as the guidelines for the expectations of the software. The 
 
 ```markdown
 # VANITI FAIRE — Brand Kit
-# Product of VNT GmbH
 
-## Agent Instructions
-Apply this brand kit strictly. Do not introduce colors, typefaces, 
-radii, or icon libraries outside this specification. shadcn 
-components should be themed via CSS variables only. Do not override 
-shadcn classes directly. Use Laravel Boost MCP for Blade integration 
-and shadcn MCP for component generation. Dark mode is a requirement 
-not an option.
+# A Product of VNT GmbH
 
----
+-----
+
+## Agent Instructions for the frontend design
+
+This document is the sole design authority for VANITI FAIRE.
+Apply every rule here strictly and without interpretation.
+Do not introduce any color, typeface, radius, shadow, animation,
+icon library, or spacing convention not explicitly defined here.
+Do not override rules based on aesthetic judgment.
+Do not suggest improvements to the brand direction.
+When in doubt, do less.
+
+Stack: Laravel 13, Blade, Tailwind CSS, Lucide icons.
+No component library. No shadcn. No Bootstrap. No Alpine unless
+explicitly introduced later.
+All UI is pure Blade templates with Tailwind utility classes.
+CSS variables are declared in resources/css/app.css only.
+Tailwind config extensions are declared in tailwind.config.js only.
+
+-----
+
+## Identity
+
+Product name:     VANITI FAIRE
+Parent company:   VNT GmbH
+Tagline:          None. Never add one.
+Domain language:  The product does not explain itself.
+
+-----
+
+## Logo Lockup
+
+Render in CSS only. No SVG. No image. No canvas.
+
+Structure:
+
+```html
+<div class="vnt-logo">
+  <span class="vnt-wordmark">VANITI FAIRE</span>
+  <span class="vnt-sub">VNT GmbH</span>
+</div>
+```
+
+CSS:
+
+```css
+.vnt-logo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.vnt-wordmark {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 3rem;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--color-foreground);
+}
+
+.vnt-sub {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  color: var(--color-foreground);
+  width: 100%;
+  display: block;
+  /* letter-spacing must be tuned manually per render size
+     until .vnt-sub width === .vnt-wordmark width exactly.
+     Use letter-spacing: Xem and adjust in increments of 0.01em. */
+  letter-spacing: 0.43em;
+}
+```
+
+Rules:
+
+- Appears on splash page and footer only. Nowhere else.
+- Minimum size: vnt-wordmark at 3rem. Never smaller.
+- No animation on the logo. Ever.
+- No color variation. Foreground on background only.
+- No tagline beneath or beside it.
+- No enclosing box, border, or background treatment.
+
+-----
 
 ## Typography
 
-Font: Inter (self-hosted, no CDN)
-Weights used: 400, 700
-Source: bunny.net/fonts or google-webfonts-helper for self-hosting
+Typeface: Inter
+Weights: 400 (Regular), 700 (Bold)
+Source: Self-hosted. No Google Fonts CDN. No Bunny CDN.
+Obtain via google-webfonts-helper.vercel.app
+Place in: public/fonts/inter/
+Declare in: resources/css/app.css
 
-### Logo Lockup
-- Line 1: VANITI FAIRE — Inter Bold, all caps, tracking-normal
-- Line 2: VNT GmbH — Inter Bold, font-size ~30% of line 1,
-  letter-spacing adjusted so text width === line 1 width exactly
-- Wrapper: inline-block div, no decoration, no animation
-- Render in CSS only, no SVG, no image
+```css
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/inter/inter-400.woff2') format('woff2');
+}
 
-### Type Scale
-Display:  Inter Bold    — headers, page titles
-Body:     Inter Regular — prose, descriptions  
-Label:    Inter Bold    — UI labels, buttons, nav
-Mono:     System mono   — only for code, never for UI
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/inter/inter-700.woff2') format('woff2');
+}
+```
 
-### Rules
-- Never mix weights mid-sentence
-- Never use italic
-- UI copy is sentence case except logo which is all caps
-- No decorative type anywhere
+Scale:
 
----
+|Role      |Weight |Size    |Class                |
+|----------|-------|--------|---------------------|
+|Display   |Bold   |2.25rem |text-4xl font-bold   |
+|Heading 1 |Bold   |1.875rem|text-3xl font-bold   |
+|Heading 2 |Bold   |1.5rem  |text-2xl font-bold   |
+|Heading 3 |Bold   |1.25rem |text-xl font-bold    |
+|Body      |Regular|1rem    |text-base font-normal|
+|Small     |Regular|0.875rem|text-sm font-normal  |
+|Label     |Bold   |0.875rem|text-sm font-bold    |
+|Fine print|Regular|0.75rem |text-xs font-normal  |
+|Mono      |Regular|0.875rem|text-sm font-mono    |
 
-## Color Palette
-Base: shadcn zinc theme — do not deviate
+Rules:
 
-### Light Mode
---background:   #FAFAFA   /* zinc-50  */
---foreground:   #09090B   /* zinc-950 */
---card:         #FFFFFF
---card-foreground: #09090B
---border:       #E4E4E7   /* zinc-200 */
---input:        #E4E4E7
---primary:      #18181B   /* zinc-900 */
---primary-foreground: #FAFAFA
---secondary:    #F4F4F5   /* zinc-100 */
---secondary-foreground: #18181B
---muted:        #F4F4F5
---muted-foreground: #71717A /* zinc-500 */
---accent:       #F4F4F5
---accent-foreground: #18181B
---destructive:  #DC2626
---ring:         #09090B
+- Inter everywhere. No exceptions.
+- Never italic. Ever.
+- Never mix weights mid-sentence.
+- UI copy is sentence case.
+- Logo is all caps. Nothing else is all caps.
+- Mono is for code output only. Never for UI labels or navigation.
+- No text decoration except underline on interactive links,
+  applied via hover state only.
 
-### Dark Mode
---background:   #09090B   /* zinc-950 */
---foreground:   #FAFAFA   /* zinc-50  */
---card:         #18181B   /* zinc-900 */
---card-foreground: #FAFAFA
---border:       #27272A   /* zinc-800 */
---input:        #27272A
---primary:      #FAFAFA
---primary-foreground: #18181B
---secondary:    #27272A
---secondary-foreground: #FAFAFA
---muted:        #27272A
---muted-foreground: #A1A1AA /* zinc-400 */
---accent:       #27272A
---accent-foreground: #FAFAFA
---destructive:  #EF4444
---ring:         #D4D4D8
+-----
 
-### Rules
-- No brand accent color. Zinc only.
-- No gradients anywhere
-- No color used for decoration, only for function
-- Destructive red is the only non-zinc color permitted
+## Color System
 
----
+Strategy: Zinc scale only. No brand accent color.
+The only non-zinc color permitted is destructive red.
+No gradients. No opacity tricks for color variation.
+Use border and background contrast for separation.
+
+Declare in resources/css/app.css:
+
+```css
+:root {
+  --color-background:         #FAFAFA;
+  --color-foreground:         #09090B;
+  --color-card:               #FFFFFF;
+  --color-card-foreground:    #09090B;
+  --color-border:             #E4E4E7;
+  --color-input:              #E4E4E7;
+  --color-primary:            #18181B;
+  --color-primary-foreground: #FAFAFA;
+  --color-secondary:          #F4F4F5;
+  --color-secondary-foreground: #18181B;
+  --color-muted:              #F4F4F5;
+  --color-muted-foreground:   #71717A;
+  --color-destructive:        #DC2626;
+  --color-ring:               #09090B;
+}
+
+.dark {
+  --color-background:         #09090B;
+  --color-foreground:         #FAFAFA;
+  --color-card:               #18181B;
+  --color-card-foreground:    #FAFAFA;
+  --color-border:             #27272A;
+  --color-input:              #27272A;
+  --color-primary:            #FAFAFA;
+  --color-primary-foreground: #18181B;
+  --color-secondary:          #27272A;
+  --color-secondary-foreground: #FAFAFA;
+  --color-muted:              #27272A;
+  --color-muted-foreground:   #A1A1AA;
+  --color-destructive:        #EF4444;
+  --color-ring:               #D4D4D8;
+}
+```
+
+Dark mode strategy:
+
+- class=“dark” on the <html> element
+- toggled via Laravel session or JS, persisted in cookie
+- default is dark mode
+
+Tailwind config — extend with CSS variables:
+
+```js
+// tailwind.config.js
+theme: {
+  extend: {
+    colors: {
+      background:   'var(--color-background)',
+      foreground:   'var(--color-foreground)',
+      card:         'var(--color-card)',
+      border:       'var(--color-border)',
+      input:        'var(--color-input)',
+      primary: {
+        DEFAULT:    'var(--color-primary)',
+        foreground: 'var(--color-primary-foreground)',
+      },
+      secondary: {
+        DEFAULT:    'var(--color-secondary)',
+        foreground: 'var(--color-secondary-foreground)',
+      },
+      muted: {
+        DEFAULT:    'var(--color-muted)',
+        foreground: 'var(--color-muted-foreground)',
+      },
+      destructive:  'var(--color-destructive)',
+    },
+  },
+},
+```
+
+-----
+
+## Spacing and Layout
+
+Scale: Tailwind default. Do not add custom spacing values.
+Density: tight. Default to less padding, not more.
+Maximum content width: max-w-5xl, centered.
+No full-bleed content sections except the splash page.
+
+Grid:
+
+- Use Tailwind grid utilities only.
+- No CSS grid written by hand unless Tailwind cannot express it.
+- No masonry layouts. No asymmetric editorial layouts.
+- Everything is on-grid. Nothing floats decoratively.
+
+-----
+
+## Shape
+
+Border radius: 2px universally.
+
+```css
+/* in app.css */
+--radius: 2px;
+```
+
+```js
+// tailwind.config.js
+borderRadius: {
+  DEFAULT: 'var(--radius)',
+  none: '0',
+  sm: 'var(--radius)',
+  md: 'var(--radius)',
+  lg: 'var(--radius)',
+  full: '9999px', /* permitted only for avatar images */
+},
+```
+
+Rules:
+
+- 2px on all interactive elements: buttons, inputs, cards, badges.
+- rounded-full permitted only for user avatar images.
+- Nothing softer than 2px. No pill buttons. No rounded-lg.
+
+-----
+
+## Elevation
+
+No box shadows. Anywhere. Ever.
+Separation is achieved through:
+
+- border: 1px solid var(–color-border)
+- background contrast between card and background
+- negative space
+
+If the agent is tempted to add a shadow, use a border instead.
+
+-----
 
 ## Iconography
-Library: Lucide (already bundled with shadcn)
-Style: outline only, never filled
-Size: 16px default, 20px for emphasis, never below 14px
-Color: inherits currentColor always
-Do not install Font Awesome or Heroicons
 
----
+Library: Lucide
+Install: bun install lucide (already available if using
+Laravel’s default Vite + bun setup)
+Import per icon in JS/Blade as needed.
 
-## Shape and Spacing
+Style rules:
 
-Border radius:
---radius: 2px
-Apply 2px universally. Nothing softer. 
-Buttons, cards, inputs — all 2px.
+- Outline only. Never filled.
+- stroke-width: 1.5 (Lucide default, do not change)
+- Size: 16px default, 20px for emphasis
+- Never below 14px
+- Color: currentColor always. Never hardcoded.
+- No icon-only buttons without a tooltip or aria-label.
 
-Spacing scale: Tailwind default
-Density: tight. Prefer less padding over more.
-No decorative dividers. Use border only when structurally necessary.
+Do not install Font Awesome, Heroicons, or any other icon library.
 
----
-
-## Elevation and Shadow
-No box shadows in light or dark mode.
-Separation is achieved through border and background contrast only.
-
----
+-----
 
 ## Motion
-No animation except:
-- Splash page entrance (single, defined elsewhere)
-- Functional transitions: 150ms ease, opacity or translate only
-No bounce, no spring, no decorative motion
 
----
+Permitted animations:
 
-## Component Behavior (shadcn)
-- Generate all components via shadcn MCP
-- Apply CSS variable overrides in app.css only
-- Dark mode via class strategy: class="dark" on html element
-- Laravel Blade components wrap shadcn output
-- Do not use shadcn's default blue accent anywhere
+1. Splash page entrance — defined separately in splash spec.
+1. Functional transitions only:
+- Duration: 150ms
+- Easing: ease
+- Properties: opacity, transform (translate only)
 
----
+Prohibited:
+
+- No bounce
+- No spring physics
+- No decorative motion
+- No scroll-triggered animations outside splash
+- No hover animations except opacity and border-color transitions
+
+Tailwind transition classes to use:
+transition-opacity, transition-colors, transition-transform
+duration-150 ease-in
+
+-----
+
+## Component Patterns
+
+### Buttons
+
+```html
+<!-- Primary -->
+<button class="bg-primary text-primary-foreground font-bold
+               text-sm px-4 py-2 rounded border border-primary
+               hover:opacity-90 transition-opacity duration-150">
+  Label
+</button>
+
+<!-- Secondary -->
+<button class="bg-secondary text-secondary-foreground font-bold
+               text-sm px-4 py-2 rounded border border-border
+               hover:opacity-90 transition-opacity duration-150">
+  Label
+</button>
+
+<!-- Destructive -->
+<button class="bg-destructive text-white font-bold
+               text-sm px-4 py-2 rounded
+               hover:opacity-90 transition-opacity duration-150">
+  Label
+</button>
+
+<!-- Ghost -->
+<button class="bg-transparent text-foreground font-bold
+               text-sm px-4 py-2 rounded
+               hover:bg-secondary transition-colors duration-150">
+  Label
+</button>
+```
+
+### Inputs
+
+```html
+<input type="text"
+       class="w-full bg-background text-foreground text-sm
+              border border-input rounded px-3 py-2
+              focus:outline-none focus:ring-1 focus:ring-ring
+              placeholder:text-muted-foreground" />
+```
+
+### Cards
+
+```html
+<div class="bg-card text-card-foreground border border-border
+            rounded p-4">
+  <!-- content -->
+</div>
+```
+
+### Badges
+
+```html
+<!-- Default -->
+<span class="bg-secondary text-secondary-foreground font-bold
+             text-xs px-2 py-0.5 rounded">
+  Label
+</span>
+
+<!-- Experimental — required for all experimental features -->
+<span class="bg-secondary text-muted-foreground font-bold
+             text-xs px-2 py-0.5 rounded tracking-wide">
+  EXPERIMENTAL
+</span>
+```
+
+-----
+
+## Experimental Feature Treatment
+
+Any feature marked experimental in the spec must include:
+
+1. EXPERIMENTAL badge adjacent to the feature heading
+1. Disclaimer block:
+
+```html
+<div class="border border-border rounded p-3 text-xs
+            text-muted-foreground space-y-1">
+  <p class="font-bold text-foreground">Notice</p>
+  <p>
+    This feature is unstable and may produce unexpected results.
+    VNT GmbH assumes no liability for outputs generated through
+    experimental functionality.
+  </p>
+</div>
+```
+
+-----
 
 ## Voice and Copy
-Tone: institutional, declarative, never warm
-Avoid: "welcome", "hello", "let's", exclamation marks
-Use: passive constructions, bureaucratic precision
-Example: "Your session has been established." 
-Not: "You're logged in!"
 
-Experimental features must include:
-- Badge: EXPERIMENTAL
-- Disclaimer: "This feature is unstable and may produce 
-  unexpected results. VNT GmbH assumes no liability."
+Tone: institutional, declarative, cold.
+Register: formal. Never casual. Never warm.
 
----
+Prohibited words and constructions:
 
-## Logo Usage Rules
-- Appears on splash and footer only
-- No color variation, no sizing below 48px for VANITI FAIRE line
-- No tagline ever
-- No animation on the logo itself
-- Light mode: foreground zinc-950 on zinc-50
-- Dark mode: foreground zinc-50 on zinc-950
+- welcome, hello, hi, hey
+- let’s, we’ll, you’ll love
+- amazing, powerful, seamless, intuitive
+- exclamation marks anywhere in UI copy
+- second person warmth (“your journey”, “your story”)
+
+Preferred constructions:
+
+- Passive voice where appropriate
+- Declarative statements
+- Bureaucratic precision
+
+Examples:
+
+|Avoid                       |Use instead              |
+|----------------------------|-------------------------|
+|Welcome back!               |Session established.     |
+|You’re all set.             |Registration complete.   |
+|Upload your photo           |Submit image file.       |
+|Share your memories         |Post to record.          |
+|Something went wrong        |An error was encountered.|
+|You don’t have any posts yet|No records found.        |
+
+Error messages: factual, no apology, no emoji.
+Success messages: confirmatory, no celebration.
+
+-----
+
+## Blade Layout Convention
+
+Master layout: resources/views/layouts/app.blade.php
+Dark mode class on html element, read from session or cookie.
+
+```html
+<!DOCTYPE html>
+<html lang="en" class="{{ session('theme', 'dark') }}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VANITI FAIRE — @yield('title')</title>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="bg-background text-foreground font-sans antialiased
+             min-h-screen">
+
+  @include('layouts.partials.header')
+
+  <main class="max-w-5xl mx-auto px-4 py-8">
+    @yield('content')
+  </main>
+
+  @include('layouts.partials.footer')
+
+</body>
+</html>
+```
+
+Footer must include the VNT logo lockup.
+Header must not include the VNT logo lockup.
+Header contains navigation only.
+
+-----
+
+## File Structure Reference
+
+```
+resources/
+  css/
+    app.css          ← CSS variables, @font-face, base resets
+  views/
+    layouts/
+      app.blade.php  ← master layout
+      partials/
+        header.blade.php
+        footer.blade.php
+  js/
+    app.js           ← Lucide icon init, theme toggle
+
+public/
+  fonts/
+    inter/
+      inter-400.woff2
+      inter-700.woff2
+
+tailwind.config.js   ← color extensions, radius overrides
+```
+```
+
+## What This Brand Kit Does Not Cover
+
+The following are defined in separate spec documents:
+
+- Splash page animation and entrance sequence
+- Navigation structure and routing
+- Page-level layouts beyond the master template
+- AI image generator UI (experimental feature spec)
+- Admin dashboard UI
+- Guestbook page UI
+- Photo album grid and slide mode
+
+Do not make design decisions for the above based on inference
+from this document. Wait for the relevant spec or ticket.
+```
 ```
 
 ## Expected Target
 
 > TODO: AI Generated pictures will be provided by user in the future as seed data. Have a system for handling them. Defer with placeholders for now.
-> TODO: An upload system must include image cropping, everything happens on the frontend and the backend only receives the cropped image.
+> TODO: An upload system must include image cropping, everything happens on the frontend and the backend only receives the cropped image--use bun's cropper.js.
 > TODO: Image normalizer should convert any uploads to webp format as well as strip the original metadata. Moreover, it should compress images when needed to mitigate high resolution and large high quality uploads.
 
 > [!important]
