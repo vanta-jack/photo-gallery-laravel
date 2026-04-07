@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePhotoRequest;
+use App\Http\Requests\UpdatePhotoRequest;
+use App\Models\Album;
 use App\Models\Photo;
 use App\Models\User;
 use App\Services\ImageProcessor;
-use App\Http\Requests\StorePhotoRequest;
-use App\Http\Requests\UpdatePhotoRequest;
-use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
  * PhotoController
- * 
+ *
  * Manages all photo-related operations in the gallery.
- * 
+ *
  * Key Laravel Concepts Demonstrated:
  * - Dependency Injection: Form Requests are auto-injected and validated
  * - Eloquent ORM: Database operations via Model methods
@@ -29,7 +30,7 @@ class PhotoController extends Controller
 {
     /**
      * Display a listing of photos.
-     * 
+     *
      * Best Practice: Use pagination for large datasets.
      * Eager load 'user' to avoid N+1 queries when displaying uploader info.
      */
@@ -42,7 +43,16 @@ class PhotoController extends Controller
             ->latest()
             ->paginate(12);
 
-        return view('photos.index', compact('photos'));
+        $ownedPhotos = collect();
+
+        if (request()->user() !== null) {
+            $ownedPhotos = Photo::query()
+                ->whereBelongsTo(request()->user())
+                ->latest()
+                ->get(['id', 'path', 'title', 'description', 'created_at']);
+        }
+
+        return view('photos.index', compact('photos', 'ownedPhotos'));
     }
 
     /**
@@ -50,12 +60,21 @@ class PhotoController extends Controller
      */
     public function create(): View
     {
-        return view('photos.create');
+        $albums = collect();
+
+        if (request()->user() !== null) {
+            $albums = Album::query()
+                ->whereBelongsTo(request()->user())
+                ->orderByDesc('id')
+                ->get(['id', 'title']);
+        }
+
+        return view('photos.create', compact('albums'));
     }
 
     /**
      * Store a newly created photo in storage.
-     * 
+     *
      * Flow:
      * 1. FormRequest validates input automatically before this method runs
      * 2. Client has already cropped and resized image
@@ -65,33 +84,71 @@ class PhotoController extends Controller
      */
     public function store(StorePhotoRequest $request, ImageProcessor $imageProcessor): RedirectResponse
     {
+        $validated = $request->validated();
         $uploaderId = $this->resolveUploaderId($request->user());
+        $selectedAlbum = $this->resolveSelectedAlbum($validated, $request->user());
+        $photoPayloads = $this->extractPhotoPayloads($validated);
 
-        // Get base64 image data from client-side processing.
-        $photoData = $request->input('photo');
-
-        if (!is_string($photoData) || !$this->hasSupportedClientImageData($photoData)) {
+        if ($photoPayloads === []) {
             throw ValidationException::withMessages([
                 'photo' => 'Please select and process an image.',
             ]);
         }
 
-        // Store the already-processed image file and keep only the file path in DB.
-        $path = $imageProcessor->process($photoData);
-        
+        $uploadedPhotos = new EloquentCollection;
+        $failedUploads = 0;
         $customTitle = trim((string) $request->input('title', ''));
         $title = $customTitle !== '' ? $customTitle : 'Photo';
 
-        $photo = Photo::create([
-            'user_id' => $uploaderId,
-            'path' => $path,
-            'title' => $title,
-            'description' => $request->input('description'),
-        ]);
+        foreach ($photoPayloads as $photoData) {
+            if (! is_string($photoData) || ! $this->hasSupportedClientImageData($photoData)) {
+                $failedUploads++;
 
-        return redirect()
-            ->route('photos.show', $photo)
-            ->with('status', 'Photo uploaded successfully!');
+                continue;
+            }
+
+            $photo = Photo::create([
+                'user_id' => $uploaderId,
+                'path' => $imageProcessor->process($photoData),
+                'title' => $title,
+                'description' => $request->input('description'),
+            ]);
+
+            if ($selectedAlbum !== null) {
+                $selectedAlbum->photos()->syncWithoutDetaching([$photo->id]);
+            }
+
+            $uploadedPhotos->push($photo);
+        }
+
+        if ($uploadedPhotos->isEmpty()) {
+            throw ValidationException::withMessages([
+                'photo' => 'None of the selected files could be uploaded.',
+            ]);
+        }
+
+        if ($uploadedPhotos->count() === 1 && count($photoPayloads) === 1 && $failedUploads === 0) {
+            return redirect()
+                ->route('photos.show', $uploadedPhotos->first())
+                ->with('status', 'Photo uploaded successfully!');
+        }
+
+        $successCount = $uploadedPhotos->count();
+        $statusMessage = sprintf(
+            '%d photo%s uploaded successfully!',
+            $successCount,
+            $successCount === 1 ? '' : 's',
+        );
+
+        $redirect = redirect()
+            ->route('photos.index')
+            ->with('status', $statusMessage);
+
+        if ($failedUploads > 0) {
+            $redirect->with('error', sprintf('%d photo%s could not be uploaded.', $failedUploads, $failedUploads === 1 ? '' : 's'));
+        }
+
+        return $redirect;
     }
 
     /**
@@ -132,8 +189,43 @@ class PhotoController extends Controller
     }
 
     /**
+     * @param  array<string, mixed>  $validated
+     * @return array<int, string>
+     */
+    private function extractPhotoPayloads(array $validated): array
+    {
+        if (isset($validated['photos']) && is_array($validated['photos'])) {
+            return array_values(array_filter(
+                $validated['photos'],
+                static fn ($photo): bool => is_string($photo) && $photo !== '',
+            ));
+        }
+
+        if (isset($validated['photo']) && is_string($validated['photo']) && $validated['photo'] !== '') {
+            return [$validated['photo']];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    private function resolveSelectedAlbum(array $validated, ?User $user): ?Album
+    {
+        if (! isset($validated['album_id']) || $user === null) {
+            return null;
+        }
+
+        return Album::query()
+            ->whereKey((int) $validated['album_id'])
+            ->whereBelongsTo($user)
+            ->first();
+    }
+
+    /**
      * Display the specified photo.
-     * 
+     *
      * Eager load relationships needed for the view:
      * - user: Who uploaded it
      * - comments: Discussion thread
@@ -152,7 +244,7 @@ class PhotoController extends Controller
 
     /**
      * Show the form for editing the specified photo.
-     * 
+     *
      * Authorization: Only photo owner or admin can edit
      * Policy check happens automatically via authorize()
      */
@@ -166,7 +258,7 @@ class PhotoController extends Controller
 
     /**
      * Update the specified photo in storage.
-     * 
+     *
      * Handles both metadata updates and optional file replacement.
      * If a new photo is uploaded, the old file is deleted to save space.
      * Client handles all image processing (WebP conversion, resizing, compression).
@@ -201,7 +293,7 @@ class PhotoController extends Controller
 
     /**
      * Remove the specified photo from storage.
-     * 
+     *
      * Cascading deletes:
      * - Database: Foreign keys with cascadeOnDelete() handle related records
      * - Storage: We must manually delete the file

@@ -9,21 +9,22 @@ Summary of all proposal tickets created from `.tickets/active/004-site-implement
 | T001 | Brand Kit Foundation | High | Resolved | None |
 | T002 | Image Cropping (Frontend) | High | Resolved | T003 |
 | T003 | Image Processor (Changed) | High | Resolved, with subs | None |
-| T004 | Photo Slide Mode | Medium | Not Written | T001 |
-| T005 | Splash Page | Medium | Not Written | T001 |
-| T006 | Guestbook as Feed | Medium | Not Written | T001 |
+| T004 | Photo Slide Mode | Medium | Proposal | T001 |
+| T005 | Splash Page | Medium | Proposal | T001 |
+| T006 | Guestbook as Feed | Medium | Proposal | T001 |
 | T007 | User Schema for CV | Medium | Proposal | None |
-| T008 | About Me Public Page | Medium | Not Written | T001, T007 |
-| T009 | Contact Modal | Low | Not Written | T008 |
+| T008 | About Me Public Page + Contact Modal | Medium | Proposal | T001, T007 |
+| T009 | Contact Modal | Low | Merged into T008 | T008 |
 | T010 | Admin Dashboard | Medium | Proposal | T001 |
-| T011 | Engagement Metrics | Medium | Not Written | None |
+| T011 | Engagement Metrics | Medium | Proposal | None |
 | T012 | AI Image Generator | Medium | Proposal | T001, T003 |
-| T013 | Cookie Sessions | High | Not Written | None |
-| T014 | Photo Analytics | Medium | Not Written | T001 |
-| T015 | Milestones Seeder | Low | Not Written | None |
-| T016 | Video Support | Low | Not Written | None |
-| T017 | Multi-Image Upload | Medium | Not Written | T003 |
-| T018 | User Directories | Low | Not Written | T003 |
+| T013 | Cookie Sessions | High | Proposal | None |
+| T014 | Photo Analytics | Medium | Proposal | T001 |
+| T015 | Milestones Seeder | Low | Proposal | None |
+| T016 | Video Support | Low | IGNORED | None |
+| T017 | Multi-Image Upload | Medium | Proposal | T003 |
+| T018 | User Directories | Low | IGNORED | T003 |
+| T019 | Clean Database & Demo Seed | High | Proposal | None |
 
 ## Written Proposals (Detailed)
 
@@ -33,7 +34,11 @@ Summary of all proposal tickets created from `.tickets/active/004-site-implement
 - **[T003-image-processor.md](T003-image-processor.md)** - WebP conversion, metadata strip, compression
 
 ### Feature Tier
-- **[T007-user-schema-cv.md](T007-user-schema-cv.md)** - CV fields for About Me functionality.
+- **[T004-photo-slide-mode.md](T004-photo-slide-mode.md)** - Fullscreen slideshow with keyboard and touch navigation
+- **[T005-splash-page.md](T005-splash-page.md)** - Animated splash modal with VNT logo on first visit
+- **[T006-guestbook-global-feed.md](T006-guestbook-global-feed.md)** - Unified social feed with posts/photos and user avatars
+- **[T007-user-schema-cv.md](T007-user-schema-cv.md)** - CV fields for About Me functionality
+- **[T008-about-me-public-page.md](T008-about-me-public-page.md)** - Public About Me page with integrated Contact Modal (includes original T009 scope)
 
 Update these in the schema for the user
   - Expertise Field: Use a long list of possible expertise publicly sourced library and just let user type and select like tag selection.
@@ -53,73 +58,50 @@ Update these in the schema for the user
       - Optionals
         - uploaded photo for certifications, ORCID ID, GitHub profile, other links
 - **[T010-admin-dashboard.md](T010-admin-dashboard.md)** - User analytics for admins
+- **[T011-engagement-metrics.md](T011-engagement-metrics.md)** - User engagement stats (votes, comments, ratings over time)
 - **[T012-ai-generator.md](T012-ai-generator.md)** - Experimental Gemini image generation
+- **[T013-cookie-sessions.md](T013-cookie-sessions.md)** - Cookie-based theme and session persistence
+- **[T014-photo-analytics.md](T014-photo-analytics.md)** - Photo analytics dashboard (top-rated, most-commented)
+- **[T015-milestones-seeder.md](T015-milestones-seeder.md)** - Milestone seed data for lifecycle stages
+- **[T017-multi-image-upload.md](T017-multi-image-upload.md)** - Batch upload with preview grid and progress indication
+- **[T019-clean-database-seed.md](T019-clean-database-seed.md)** - Clean database reset with demo user accounts
 
-## Tickets Not Yet Written (Summaries)
-
-### T004: Photo Slide Mode
-Fullscreen slideshow viewer with keyboard as well as touch screen button navigation. Toggle between grid and slideshow. Depends on T001 for styling.
-
-### T005: Animated Splash Page
-Vaniti Faire logo animation, should be a pop-up box when user enters the first time. Depends on T001 for styling.
-
-### T006: Guestbook as Global Feed
-Refactor guestbook to aggregate posts/photos as feed with user avatars. Depends on T001.
-
-### T008: About Me Public Page
-Public user profile at `/users/{user}` displaying CV fields. Depends on T001 and T007.
+## Implementation Notes
 
 ### T009: Contact Me Modal
-Contact button on About Me page opening HTML dialog with contact info. Depends on T008.
+Merged into T008 to be implemented in the same delivery pass on the About Me page.
 
-### T011: User Post Engagement Metrics
-Display engagement stats (votes, comments) on user profile. No dependencies.
-
-### T013: Cookie-Based Sessions
-Theme persistence via cookie across browser sessions. ThemeController updates.
-
-### T014: Graphical Analysis - Photo Ratings
-Analytics page with top rated and most commented photos. Depends on T001.
-
-### T015: Milestones Seed Data Structure
-Seeder for milestone placeholders (baby, grade school, college stages).
-
-### T016: Video Integration
-Add video support to photos with `type` column and conditional rendering.
-
-### T017: Multi-Image Upload
-Batch upload multiple images at once. Depends on T003.
-
-### T018: User Directories for Images
-Organize uploads in `photos/{user_id}/` directories. Depends on T003.
+### IGNORED Tickets
+- **T016: Video Integration** - Out of scope for current phase
+- **T018: User Directories for Images** - Out of scope for current phase
 
 ## Recommended Implementation Order
 
-### Phase 1 - Foundation (Start Here)
-1. **T001** Brand Kit Foundation (blocks most UI work)
-2. **T003** Image Processor (blocks proper image handling)
-3. **T002** Image Cropping (depends on T003)
-4. **T013** Cookie Sessions
+### Phase 1 - Foundation (Completed)
+1. ✅ **T001** Brand Kit Foundation
+2. ✅ **T003** Image Processor
+3. ✅ **T002** Image Cropping
 
-### Phase 2 - Core Features
-5. **T007** User Schema for CV
-6. **T008** About Me Public Page
-7. **T004** Photo Slide Mode
-8. **T005** Animated Splash Page
+### Phase 2 - Core Features (In Progress)
+4. **T007** User Schema for CV (Proposal ready)
+5. **T008** About Me Public Page + Contact Modal (Proposal ready)
+6. **T013** Cookie Sessions (Proposal ready)
+7. **T004** Photo Slide Mode (Proposal ready)
+8. **T005** Animated Splash Page (Proposal ready)
 
 ### Phase 3 - Social & Analytics
-9. **T006** Guestbook as Global Feed
-10. **T010** Admin Dashboard
-11. **T011** Engagement Metrics
-12. **T014** Photo Analytics
+9. **T006** Guestbook as Global Feed (Proposal ready)
+10. **T010** Admin Dashboard (Proposal ready)
+11. **T011** Engagement Metrics (Proposal ready)
+12. **T014** Photo Analytics (Proposal ready)
 
 ### Phase 4 - Advanced & Polish
-13. **T012** AI Image Generator
-14. **T009** Contact Modal
-15. **T017** Multi-Image Upload
-16. **T018** User Directories
-17. **T015** Milestones Seeder
-18. **T016** Video Integration
+13. **T012** AI Image Generator (Proposal ready)
+14. **T017** Multi-Image Upload (Proposal ready)
+15. **T015** Milestones Seeder (Proposal ready)
+
+### Phase 5 - Demo Preparation
+16. **T019** Clean Database & Demo Seed (Proposal ready - HIGH PRIORITY before demo)
 
 ## Technology Notes
 

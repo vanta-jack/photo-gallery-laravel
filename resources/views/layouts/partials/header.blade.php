@@ -4,12 +4,16 @@
             <div class="flex gap-6">
                 <a href="{{ route('home') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Home</a>
                 <a href="{{ route('photos.index') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Photos</a>
+                <a href="{{ route('photos.analytics') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Analytics</a>
                 <a href="{{ route('albums.index') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Albums</a>
                 <a href="{{ route('posts.index') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Posts</a>
                 <a href="{{ route('guestbook.index') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Guestbook</a>
                 @auth
                     <a href="{{ route('milestones.index') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Milestones</a>
                 @endauth
+                @can('view-admin-dashboard')
+                    <a href="{{ route('admin.dashboard') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Admin</a>
+                @endcan
             </div>
             <div class="flex gap-4 items-center">
                 <button 

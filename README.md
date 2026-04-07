@@ -56,3 +56,11 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Demo reset baseline
+
+Reset the app to the clean demo dataset (two accounts + lifecycle milestones, no photos/social content):
+
+```bash
+php artisan migrate:fresh --seed
+```

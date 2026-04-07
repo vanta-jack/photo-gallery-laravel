@@ -3,6 +3,8 @@
 @section('title', 'Photo Gallery - Home')
 
 @section('content')
+<x-splash-modal />
+
 <div class="bg-card text-card-foreground border border-border rounded p-6 mb-8">
     <h1 class="text-3xl font-bold text-foreground mb-2">Welcome to Photo Gallery</h1>
     <p class="text-muted-foreground">A social photo sharing platform built with Laravel 13</p>

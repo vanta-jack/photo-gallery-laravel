@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
-use App\Models\GuestbookEntry;
 use App\Http\Requests\StoreGuestbookEntryRequest;
 use App\Http\Requests\UpdateGuestbookEntryRequest;
+use App\Models\GuestbookEntry;
+use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
  * GuestbookEntryController
- * 
+ *
  * Manages guestbook entries - visitor messages with optional photos.
  * Each entry creates a Post (for title/description) and GuestbookEntry (for photo link).
  */
@@ -19,13 +19,18 @@ class GuestbookEntryController extends Controller
 {
     /**
      * Display all guestbook entries
-     * 
+     *
      * Public route: anyone can read guestbook
      */
     public function index(): View
     {
-        // Load entries with their posts and photos
-        $entries = GuestbookEntry::with(['post.user', 'photo'])
+        // Unified feed with user avatars and engagement cues.
+        $entries = GuestbookEntry::with([
+            'post' => fn ($query) => $query
+                ->withCount('votes')
+                ->with('user.profilePhoto:id,path'),
+            'photo' => fn ($query) => $query->withCount(['ratings', 'comments']),
+        ])
             ->latest()
             ->paginate(20);
 
@@ -42,7 +47,7 @@ class GuestbookEntryController extends Controller
 
     /**
      * Store new guestbook entry
-     * 
+     *
      * Creates Post first, then GuestbookEntry linking to it
      */
     public function store(StoreGuestbookEntryRequest $request): RedirectResponse
@@ -80,7 +85,7 @@ class GuestbookEntryController extends Controller
 
     /**
      * Update guestbook entry
-     * 
+     *
      * Updates the underlying Post and GuestbookEntry
      */
     public function update(UpdateGuestbookEntryRequest $request, GuestbookEntry $guestbook): RedirectResponse
@@ -107,7 +112,7 @@ class GuestbookEntryController extends Controller
 
     /**
      * Delete guestbook entry
-     * 
+     *
      * Deletes both GuestbookEntry and underlying Post
      */
     public function destroy(GuestbookEntry $guestbook): RedirectResponse

@@ -5,7 +5,21 @@
 @section('content')
 <div class="flex justify-between items-center mb-8">
     <h1 class="text-2xl font-bold text-foreground">Photos</h1>
-    <a href="{{ route('photos.create') }}" class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">Upload Photo</a>
+    <div class="flex items-center gap-3">
+        @auth
+            @if($ownedPhotos->isNotEmpty())
+                <button
+                    type="button"
+                    class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150 inline-flex items-center gap-2"
+                    data-slideshow-open
+                >
+                    <x-icon name="images" class="w-4 h-4" />
+                    Slide Mode
+                </button>
+            @endif
+        @endauth
+        <a href="{{ route('photos.create') }}" class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">Upload Photo</a>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -27,4 +41,19 @@
 <div class="mt-8">
     {{ $photos->links() }}
 </div>
+
+@auth
+    @include('photos.partials.slideshow-modal', [
+        'slideshowPhotos' => $ownedPhotos
+            ->map(fn ($photo) => [
+                'id' => $photo->id,
+                'title' => $photo->title,
+                'description' => $photo->description,
+                'url' => \Illuminate\Support\Facades\Storage::url($photo->path),
+                'created_at' => $photo->created_at?->format('M d, Y'),
+                'show_url' => route('photos.show', $photo),
+            ])
+            ->values(),
+    ])
+@endauth
 @endsection

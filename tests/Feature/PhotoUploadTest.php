@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Album;
 use App\Models\Photo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,17 +15,17 @@ class PhotoUploadTest extends TestCase
 
     private function fakeWebpDataUri(): string
     {
-        return 'data:image/webp;base64,' . base64_encode('fake-webp');
+        return 'data:image/webp;base64,'.base64_encode('fake-webp');
     }
 
     private function fakePngDataUri(): string
     {
-        return 'data:image/png;base64,' . base64_encode('fake-png');
+        return 'data:image/png;base64,'.base64_encode('fake-png');
     }
 
     private function fakeJpegDataUri(): string
     {
-        return 'data:image/jpeg;base64,' . base64_encode('fake-jpeg');
+        return 'data:image/jpeg;base64,'.base64_encode('fake-jpeg');
     }
 
     public function test_single_photo_upload_redirects_to_photo_show(): void
@@ -49,7 +50,7 @@ class PhotoUploadTest extends TestCase
         $this->assertStringNotContainsString('data:image/', $photo->path);
     }
 
-    public function test_multiple_photo_upload_is_rejected(): void
+    public function test_multiple_photo_upload_creates_records_and_redirects_to_index(): void
     {
         Storage::fake('public');
         $user = User::factory()->user()->create();
@@ -65,7 +66,44 @@ class PhotoUploadTest extends TestCase
                 'description' => 'Multiple upload test',
             ]);
 
-        $response->assertSessionHasErrors('photo');
+        $response->assertRedirect(route('photos.index'));
+        $this->assertDatabaseCount('photos', 2);
+        Photo::query()->get()->each(fn (Photo $photo) => Storage::disk('public')->assertExists($photo->path));
+    }
+
+    public function test_multiple_photo_upload_can_attach_all_photos_to_selected_album(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->user()->create();
+        $album = Album::factory()->for($user)->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->post(route('photos.store'), [
+                'photos' => [
+                    $this->fakeWebpDataUri(),
+                    $this->fakePngDataUri(),
+                ],
+                'album_id' => $album->id,
+            ]);
+
+        $response->assertRedirect(route('photos.index'));
+        $this->assertDatabaseCount('photos', 2);
+        $this->assertDatabaseCount('album_photo', 2);
+    }
+
+    public function test_album_assignment_requires_authenticated_owner(): void
+    {
+        Storage::fake('public');
+        $owner = User::factory()->user()->create();
+        $album = Album::factory()->for($owner)->create();
+
+        $response = $this->post(route('photos.store'), [
+            'photo' => $this->fakeWebpDataUri(),
+            'album_id' => $album->id,
+        ]);
+
+        $response->assertSessionHasErrors('album_id');
         $this->assertDatabaseCount('photos', 0);
     }
 
