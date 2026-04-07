@@ -41,12 +41,13 @@ class UpdateUserRequest extends FormRequest
             'academic_history' => ['nullable', 'array'],
             'academic_history.*.degree' => ['required_with:academic_history', 'string', 'max:255'],
             'academic_history.*.institution' => ['required_with:academic_history', 'string', 'max:255'],
-            'academic_history.*.year' => ['nullable', 'string', 'max:20'],
+            'academic_history.*.graduation_date' => ['required_with:academic_history', 'date_format:Y-m-d'],
             
             'professional_experience' => ['nullable', 'array'],
             'professional_experience.*.title' => ['required_with:professional_experience', 'string', 'max:255'],
             'professional_experience.*.company' => ['required_with:professional_experience', 'string', 'max:255'],
-            'professional_experience.*.years' => ['nullable', 'string', 'max:50'],
+            'professional_experience.*.start_date' => ['required_with:professional_experience', 'date_format:Y-m-d'],
+            'professional_experience.*.end_date' => ['nullable', 'date_format:Y-m-d'],
             'professional_experience.*.description' => ['nullable', 'string', 'max:2000'],
             
             'skills' => ['nullable', 'array'],
@@ -55,7 +56,7 @@ class UpdateUserRequest extends FormRequest
             'certifications' => ['nullable', 'array'],
             'certifications.*.name' => ['required_with:certifications', 'string', 'max:255'],
             'certifications.*.issuer' => ['nullable', 'string', 'max:255'],
-            'certifications.*.year' => ['nullable', 'string', 'max:20'],
+            'certifications.*.awarded_on' => ['required_with:certifications', 'date_format:Y-m-d'],
             'certifications.*.photo_id' => ['nullable', 'exists:photos,id'],
             
             'other_links' => ['nullable', 'array'],

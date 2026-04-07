@@ -88,7 +88,8 @@
                                 <input type="text" name="academic_history[{{ $index }}][degree]" value="{{ $entry['degree'] ?? '' }}" placeholder="Degree (e.g., BSc Computer Science)" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
                             </div>
                             <div>
-                                <input type="text" name="academic_history[{{ $index }}][year]" value="{{ $entry['year'] ?? '' }}" placeholder="Year" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+                                <label class="block text-xs font-medium text-muted-foreground mb-1">Graduation Date</label>
+                                <input type="date" name="academic_history[{{ $index }}][graduation_date]" value="{{ $entry['graduation_date'] ?? '' }}" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
                             </div>
                         </div>
                         <div class="mt-3">
@@ -119,8 +120,15 @@
                             <input type="text" name="professional_experience[{{ $index }}][title]" value="{{ $entry['title'] ?? '' }}" placeholder="Job Title" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
                             <input type="text" name="professional_experience[{{ $index }}][company]" value="{{ $entry['company'] ?? '' }}" placeholder="Company" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
                         </div>
-                        <div class="mb-3">
-                            <input type="text" name="professional_experience[{{ $index }}][years]" value="{{ $entry['years'] ?? '' }}" placeholder="Years (e.g., 2020-2023)" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label class="block text-xs font-medium text-muted-foreground mb-1">Start Date</label>
+                                <input type="date" name="professional_experience[{{ $index }}][start_date]" value="{{ $entry['start_date'] ?? '' }}" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-muted-foreground mb-1">End Date</label>
+                                <input type="date" name="professional_experience[{{ $index }}][end_date]" value="{{ $entry['end_date'] ?? '' }}" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+                            </div>
                         </div>
                         <textarea name="professional_experience[{{ $index }}][description]" rows="3" placeholder="Brief description" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">{{ $entry['description'] ?? '' }}</textarea>
                     </div>
@@ -174,7 +182,8 @@
                             <div class="grid grid-cols-3 gap-3 mb-3">
                                 <input type="text" name="certifications[{{ $index }}][name]" value="{{ $entry['name'] ?? '' }}" placeholder="Certification name" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
                                 <input type="text" name="certifications[{{ $index }}][issuer]" value="{{ $entry['issuer'] ?? '' }}" placeholder="Issuer" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
-                                <input type="text" name="certifications[{{ $index }}][year]" value="{{ $entry['year'] ?? '' }}" placeholder="Year" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+                                <label class="block text-xs font-medium text-muted-foreground mb-1">Awarded On</label>
+                                <input type="date" name="certifications[{{ $index }}][awarded_on]" value="{{ $entry['awarded_on'] ?? '' }}" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
                             </div>
                             <input type="number" min="1" name="certifications[{{ $index }}][photo_id]" value="{{ $entry['photo_id'] ?? '' }}" placeholder="Optional certification photo ID" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
                         </div>
@@ -233,12 +242,13 @@ document.getElementById('add-academic').addEventListener('click', function() {
             <button type="button" class="remove-academic text-destructive text-sm hover:underline">Remove</button>
         </div>
         <div class="grid grid-cols-3 gap-3">
-            <div class="col-span-2">
-                <input type="text" name="academic_history[${academicIndex}][degree]" placeholder="Degree (e.g., BSc Computer Science)" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
-            </div>
-            <div>
-                <input type="text" name="academic_history[${academicIndex}][year]" placeholder="Year" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
-            </div>
+                <div class="col-span-2">
+                    <input type="text" name="academic_history[${academicIndex}][degree]" placeholder="Degree (e.g., BSc Computer Science)" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-muted-foreground mb-1">Graduation Date</label>
+                    <input type="date" name="academic_history[${academicIndex}][graduation_date]" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+                </div>
         </div>
         <div class="mt-3">
             <input type="text" name="academic_history[${academicIndex}][institution]" placeholder="Institution" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
@@ -277,8 +287,15 @@ document.getElementById('add-experience').addEventListener('click', function() {
             <input type="text" name="professional_experience[${experienceIndex}][title]" placeholder="Job Title" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
             <input type="text" name="professional_experience[${experienceIndex}][company]" placeholder="Company" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
         </div>
-        <div class="mb-3">
-            <input type="text" name="professional_experience[${experienceIndex}][years]" placeholder="Years (e.g., 2020-2023)" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+                <label class="block text-xs font-medium text-muted-foreground mb-1">Start Date</label>
+                <input type="date" name="professional_experience[${experienceIndex}][start_date]" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+            </div>
+            <div>
+                <label class="block text-xs font-medium text-muted-foreground mb-1">End Date</label>
+                <input type="date" name="professional_experience[${experienceIndex}][end_date]" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+            </div>
         </div>
         <textarea name="professional_experience[${experienceIndex}][description]" rows="3" placeholder="Brief description" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
     `;
@@ -303,7 +320,10 @@ document.getElementById('add-certification').addEventListener('click', function(
         <div class="grid grid-cols-3 gap-3 mb-3">
             <input type="text" name="certifications[${certificationIndex}][name]" placeholder="Certification name" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
             <input type="text" name="certifications[${certificationIndex}][issuer]" placeholder="Issuer" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
-            <input type="text" name="certifications[${certificationIndex}][year]" placeholder="Year" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+            <div>
+                <label class="block text-xs font-medium text-muted-foreground mb-1">Awarded On</label>
+                <input type="date" name="certifications[${certificationIndex}][awarded_on]" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+            </div>
         </div>
         <input type="number" min="1" name="certifications[${certificationIndex}][photo_id]" placeholder="Optional certification photo ID" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
     `;

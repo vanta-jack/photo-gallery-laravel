@@ -78,7 +78,7 @@ class UserProfileTest extends TestCase
             'last_name' => $user->last_name,
             'email' => $user->email,
             'academic_history' => [
-                ['degree' => 'BSc Computer Science', 'institution' => '', 'year' => '2020'],
+                ['degree' => 'BSc Computer Science', 'institution' => '', 'graduation_date' => '2020-06-01'],
             ],
         ]);
 
@@ -90,8 +90,8 @@ class UserProfileTest extends TestCase
             'last_name' => $user->last_name,
             'email' => $user->email,
             'academic_history' => [
-                ['degree' => 'BSc Computer Science', 'institution' => 'MIT', 'year' => '2020'],
-                ['degree' => 'MSc Data Science', 'institution' => 'Stanford', 'year' => '2022'],
+                ['degree' => 'BSc Computer Science', 'institution' => 'MIT', 'graduation_date' => '2020-06-01'],
+                ['degree' => 'MSc Data Science', 'institution' => 'Stanford', 'graduation_date' => '2022-05-15'],
             ],
         ]);
 
@@ -111,7 +111,7 @@ class UserProfileTest extends TestCase
             'last_name' => $user->last_name,
             'email' => $user->email,
             'professional_experience' => [
-                ['title' => 'Senior Developer', 'company' => '', 'years' => '2020-2023'],
+                ['title' => 'Senior Developer', 'company' => '', 'start_date' => '2020-01-01', 'end_date' => '2023-12-31'],
             ],
         ]);
 
@@ -126,7 +126,8 @@ class UserProfileTest extends TestCase
                 [
                     'title' => 'Senior Developer',
                     'company' => 'Tech Corp',
-                    'years' => '2020-2023',
+                    'start_date' => '2020-01-01',
+                    'end_date' => '2023-12-31',
                     'description' => 'Led development of core platform features.',
                 ],
             ],
@@ -161,14 +162,14 @@ class UserProfileTest extends TestCase
         $user = User::factory()->create(['role' => 'user']);
 
         $academicData = [
-            ['degree' => 'BSc CS', 'institution' => 'MIT', 'year' => '2020'],
+            ['degree' => 'BSc CS', 'institution' => 'MIT', 'graduation_date' => '2020-06-01'],
         ];
         $experienceData = [
-            ['title' => 'Developer', 'company' => 'Acme', 'years' => '2020-2023', 'description' => 'Built things'],
+            ['title' => 'Developer', 'company' => 'Acme', 'start_date' => '2020-01-01', 'end_date' => '2023-12-31', 'description' => 'Built things'],
         ];
         $skillsData = ['PHP', 'Laravel', 'JavaScript'];
         $certificationsData = [
-            ['name' => 'AWS Certified Developer', 'issuer' => 'Amazon', 'year' => '2024'],
+            ['name' => 'AWS Certified Developer', 'issuer' => 'Amazon', 'awarded_on' => '2024-03-15'],
         ];
         $otherLinksData = [
             ['label' => 'Portfolio', 'url' => 'https://example.com'],
