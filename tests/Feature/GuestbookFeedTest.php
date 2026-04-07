@@ -81,4 +81,42 @@ class GuestbookFeedTest extends TestCase
             ->assertOk()
             ->assertSeeTextInOrder(['Newer entry', 'Older entry']);
     }
+
+    public function test_guest_can_create_guestbook_entry_and_is_stored_as_anonymous(): void
+    {
+        $this->get(route('guestbook.create'))
+            ->assertOk();
+
+        $response = $this->post(route('guestbook.store'), [
+            'title' => 'Anonymous visitor',
+            'description' => 'Great gallery.',
+        ]);
+
+        $response->assertRedirect(route('guestbook.index'));
+
+        $post = Post::query()->where('title', 'Anonymous visitor')->first();
+
+        $this->assertNotNull($post);
+        $this->assertNull($post->user_id);
+        $this->assertDatabaseHas('guestbook_entries', [
+            'post_id' => $post->id,
+        ]);
+    }
+
+    public function test_authenticated_user_guestbook_entry_keeps_user_attribution(): void
+    {
+        $author = User::factory()->user()->create();
+
+        $this->actingAs($author)
+            ->post(route('guestbook.store'), [
+                'title' => 'Signed message',
+                'description' => 'Happy to be here.',
+            ])
+            ->assertRedirect(route('guestbook.index'));
+
+        $this->assertDatabaseHas('posts', [
+            'title' => 'Signed message',
+            'user_id' => $author->id,
+        ]);
+    }
 }

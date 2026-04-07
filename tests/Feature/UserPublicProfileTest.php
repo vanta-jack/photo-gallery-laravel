@@ -64,4 +64,16 @@ class UserPublicProfileTest extends TestCase
         $response->assertOk();
         $response->assertSeeText('+1 555 0199');
     }
+
+    public function test_public_profile_for_other_users_has_no_profile_edit_exposure(): void
+    {
+        $viewer = User::factory()->user()->create();
+        $target = User::factory()->user()->create();
+
+        $response = $this->actingAs($viewer)->get(route('users.show', $target));
+
+        $response->assertOk();
+        $response->assertDontSeeText('Edit Profile');
+        $response->assertDontSee(route('profile.edit'), false);
+    }
 }

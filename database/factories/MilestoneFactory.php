@@ -19,22 +19,48 @@ class MilestoneFactory extends Factory
      */
     public function definition(): array
     {
-        $stage = fake()->randomElement(['baby', 'grade_school', 'highschool_college']);
+        $stage = fake()->randomElement([
+            'baby',
+            'toddler',
+            'preschool',
+            'grade_school',
+            'middle_school',
+            'high_school',
+            'college',
+            'adult',
+        ]);
 
         $labels = [
             'baby' => [
                 'Baby · First Smile',
+                'Baby · First Crawl',
+            ],
+            'toddler' => [
                 'Toddler · First Steps',
+                'Toddler · First Full Sentence',
+            ],
+            'preschool' => [
+                'Preschool · First Day of Preschool',
+                'Preschool · Favorite Story Time',
             ],
             'grade_school' => [
-                'Preschool · First Day of Preschool',
                 'Grade School · Grade 1 Kickoff',
+                'Grade School · First School Play',
+            ],
+            'middle_school' => [
                 'Middle School · Science Fair Finalist',
             ],
-            'highschool_college' => [
+            'high_school' => [
                 'High School · Freshman Orientation',
+                'High School · Varsity Team Tryout',
+            ],
+            'college' => [
                 'College · Capstone Presentation',
+                'College · Internship Offer',
+            ],
+            'adult' => [
                 'Adult · First Career Role',
+                'Adult · Leadership Promotion',
             ],
         ];
 
@@ -44,6 +70,7 @@ class MilestoneFactory extends Factory
             'stage' => $stage,
             'label' => fake()->randomElement($labels[$stage]),
             'description' => fake()->optional(0.7)->paragraph(),
+            'is_public' => fake()->boolean(40),
         ];
     }
 

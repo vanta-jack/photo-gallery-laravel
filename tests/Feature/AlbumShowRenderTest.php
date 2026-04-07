@@ -28,14 +28,14 @@ class AlbumShowRenderTest extends TestCase
         $response->assertSeeText('Average rating');
     }
 
-    public function test_private_album_show_redirects_guest_to_album_index(): void
+    public function test_private_album_show_redirects_guest_to_home(): void
     {
         $owner = User::factory()->user()->create();
         $album = Album::factory()->for($owner)->create(['is_private' => true]);
 
         $response = $this->get(route('albums.show', ['album' => $album]));
 
-        $response->assertRedirect(route('albums.index'));
+        $response->assertRedirect(route('home'));
         $response->assertSessionHas('error', 'This album is private.');
     }
 }

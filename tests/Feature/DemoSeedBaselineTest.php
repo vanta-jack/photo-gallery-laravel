@@ -71,6 +71,16 @@ class DemoSeedBaselineTest extends TestCase
             'College',
             'Adult',
         ];
+        $expectedStages = [
+            'baby',
+            'toddler',
+            'preschool',
+            'grade_school',
+            'middle_school',
+            'high_school',
+            'college',
+            'adult',
+        ];
 
         foreach ($users as $user) {
             $milestones = $user->milestones()
@@ -81,6 +91,10 @@ class DemoSeedBaselineTest extends TestCase
             $this->assertSame(
                 $expectedCategories,
                 $milestones->map(fn (Milestone $milestone): string => explode(' · ', $milestone->label)[0])->all(),
+            );
+            $this->assertSame(
+                $expectedStages,
+                $milestones->pluck('stage')->all(),
             );
 
             for ($index = 1; $index < $milestones->count(); $index++) {

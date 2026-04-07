@@ -23,9 +23,16 @@
                 </div>
             </div>
 
-            <button type="button" data-contact-open aria-haspopup="dialog" aria-controls="contactDialog" class="inline-flex items-center justify-center bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">
-                Contact Me
-            </button>
+            <div class="flex flex-col gap-2 sm:flex-row">
+                @if($showEditCta ?? false)
+                    <a href="{{ route('profile.edit') }}" class="inline-flex items-center justify-center bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150">
+                        Edit Profile
+                    </a>
+                @endif
+                <button type="button" data-contact-open aria-haspopup="dialog" aria-controls="contactDialog" class="inline-flex items-center justify-center bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">
+                    Contact Me
+                </button>
+            </div>
         </div>
     </section>
 

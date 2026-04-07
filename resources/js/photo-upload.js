@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const clearHiddenInputs = () => {
       singleHiddenInput.value = '';
+      singleHiddenInput.disabled = false;
       hiddenList.innerHTML = '';
     };
 
@@ -163,11 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       setError('');
+      const requiresPhoto = form.dataset.photoRequired !== 'false';
 
       if (selectedPhotos.length === 0) {
-        event.preventDefault();
-        setStatus('');
-        setError('Please select at least one image before uploading.');
+        if (requiresPhoto) {
+          event.preventDefault();
+          setStatus('');
+          setError('Please select at least one image before uploading.');
+        }
         return;
       }
 
@@ -213,8 +217,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (processedPayloads.length === 1) {
+        singleHiddenInput.disabled = false;
         singleHiddenInput.value = processedPayloads[0];
       } else {
+        singleHiddenInput.disabled = true;
         processedPayloads.forEach((payload) => {
           const input = document.createElement('input');
           input.type = 'hidden';

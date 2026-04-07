@@ -29,7 +29,7 @@ class UserProfileTest extends TestCase
             'linkedin' => 'https://linkedin.com/in/johndoe',
         ]);
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('profile.show'));
         $response->assertSessionHas('status');
 
         $user->refresh();
@@ -214,7 +214,7 @@ class UserProfileTest extends TestCase
             'email' => $user1->email,
         ]);
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('profile.show'));
         $user1->refresh();
         $user2->refresh();
 
@@ -256,5 +256,24 @@ class UserProfileTest extends TestCase
         $user->refresh();
         $this->assertEquals('0000-0002-1234-5678', $user->orcid_id);
         $this->assertEquals('https://github.com/johndoe', $user->github);
+    }
+
+    public function test_authenticated_profile_defaults_to_read_only_with_edit_cta(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+
+        $response = $this->actingAs($user)->get(route('profile.show'));
+
+        $response->assertOk();
+        $response->assertSeeText('Contact Me');
+        $response->assertSeeText('Edit Profile');
+        $response->assertSee(route('profile.edit'), false);
+        $response->assertDontSee('id="profile-form"', false);
+    }
+
+    public function test_profile_route_requires_authentication(): void
+    {
+        $this->get(route('profile.show'))
+            ->assertRedirect(route('login'));
     }
 }

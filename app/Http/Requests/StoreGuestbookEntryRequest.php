@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * StoreGuestbookEntryRequest
- * 
+ *
  * Validates creating a guestbook entry.
  * GuestbookEntry wraps a Post with optional photo.
  */
@@ -14,7 +14,7 @@ class StoreGuestbookEntryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return true;
     }
 
     /**

@@ -4,7 +4,10 @@
 
 @section('content')
 <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-foreground">Albums</h1>
+    <h1 class="text-2xl font-bold text-foreground inline-flex items-center gap-2">
+        <x-icon name="folder" class="w-6 h-6" />
+        My Albums
+    </h1>
     @auth
         <a href="{{ route('albums.create') }}" class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">Create Album</a>
     @endauth

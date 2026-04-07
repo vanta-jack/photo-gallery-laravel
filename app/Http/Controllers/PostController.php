@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -24,10 +25,18 @@ class PostController extends Controller
      */
     public function index(): View
     {
-        $posts = Post::with('user')
-            ->withCount('votes') // Adds votes_count attribute
+        $posts = Post::query()
+            ->whereBelongsTo(request()->user())
+            ->with('user')
+            ->withCount('votes')
             ->latest()
             ->paginate(15);
+
+        $posts->getCollection()->transform(function (Post $post): Post {
+            $post->setAttribute('description_html', $this->renderMarkdown($post->description));
+
+            return $post;
+        });
 
         return view('posts.index', compact('posts'));
     }
@@ -45,10 +54,12 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request): RedirectResponse
     {
+        $validated = $request->validated();
+
         $post = Post::create([
             'user_id' => $request->user()->id,
-            'title' => $request->title,
-            'description' => $request->description,
+            'title' => $validated['title'],
+            'description' => $validated['description'],
         ]);
 
         return redirect()
@@ -63,6 +74,7 @@ class PostController extends Controller
     {
         // Load author and votes with voters
         $post->load(['user', 'votes.user']);
+        $post->setAttribute('description_html', $this->renderMarkdown($post->description));
 
         return view('posts.show', compact('post'));
     }
@@ -105,5 +117,17 @@ class PostController extends Controller
         return redirect()
             ->route('posts.index')
             ->with('status', 'Post deleted successfully!');
+    }
+
+    private function renderMarkdown(?string $description): ?string
+    {
+        if (! filled($description)) {
+            return null;
+        }
+
+        return Str::markdown($description, [
+            'html_input' => 'strip',
+            'allow_unsafe_links' => false,
+        ]);
     }
 }

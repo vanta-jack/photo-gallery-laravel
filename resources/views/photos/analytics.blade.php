@@ -5,13 +5,47 @@
 @section('content')
 <div class="space-y-8">
     <div>
-        <h1 class="text-2xl font-bold text-foreground">Photo Analytics</h1>
+        <h1 class="text-2xl font-bold text-foreground inline-flex items-center gap-2">
+            <x-icon name="grid" class="w-6 h-6" />
+            Photo Analytics
+        </h1>
         <p class="text-sm text-muted-foreground mt-1">Discover the highest-rated and most-discussed photos.</p>
+        <div class="mt-4 inline-flex items-center gap-2 rounded border border-border bg-card p-1">
+            <a
+                href="{{ route('photos.analytics', ['scope' => 'global']) }}"
+                class="px-3 py-1 text-xs font-bold rounded {{ $scope === 'global' ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted' }}"
+            >
+                Global
+            </a>
+            @auth
+                <a
+                    href="{{ route('photos.analytics', ['scope' => 'mine']) }}"
+                    class="px-3 py-1 text-xs font-bold rounded {{ $scope === 'mine' ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-muted' }}"
+                >
+                    My Photos
+                </a>
+            @else
+                <span class="px-3 py-1 text-xs text-muted-foreground">Login to filter by your photos</span>
+            @endauth
+        </div>
     </div>
 
     <section class="grid gap-6 md:grid-cols-2">
         <article class="bg-card border border-border rounded p-6">
             <h2 class="text-lg font-bold text-foreground mb-4">Top Rated Photos</h2>
+            <div class="h-32 border border-border rounded p-2 mb-4 bg-background/40">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+                    @foreach($topRatedChart as $bar)
+                        <rect
+                            x="{{ $bar['x'] }}"
+                            y="{{ 100 - $bar['height'] }}"
+                            width="{{ $bar['width'] }}"
+                            height="{{ $bar['height'] }}"
+                            class="fill-current text-primary"
+                        />
+                    @endforeach
+                </svg>
+            </div>
             <div class="space-y-3">
                 @forelse($topRatedPhotos as $photo)
                     <div class="border border-border rounded p-3">
@@ -37,6 +71,19 @@
 
         <article class="bg-card border border-border rounded p-6">
             <h2 class="text-lg font-bold text-foreground mb-4">Most Commented Photos</h2>
+            <div class="h-32 border border-border rounded p-2 mb-4 bg-background/40">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+                    @foreach($mostCommentedChart as $bar)
+                        <rect
+                            x="{{ $bar['x'] }}"
+                            y="{{ 100 - $bar['height'] }}"
+                            width="{{ $bar['width'] }}"
+                            height="{{ $bar['height'] }}"
+                            class="fill-current text-secondary-foreground"
+                        />
+                    @endforeach
+                </svg>
+            </div>
             <div class="space-y-3">
                 @forelse($mostCommentedPhotos as $photo)
                     <div class="border border-border rounded p-3">

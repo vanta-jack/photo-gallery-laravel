@@ -36,21 +36,18 @@ class PhotoController extends Controller
      */
     public function index(): View
     {
-        // with('user') loads the relationship in a single query
-        // latest() orders by created_at descending
-        // paginate(12) returns 12 items per page with pagination links
-        $photos = Photo::with('user')
+        $user = request()->user();
+
+        $photos = Photo::query()
+            ->whereBelongsTo($user)
+            ->with('user')
             ->latest()
             ->paginate(12);
 
-        $ownedPhotos = collect();
-
-        if (request()->user() !== null) {
-            $ownedPhotos = Photo::query()
-                ->whereBelongsTo(request()->user())
-                ->latest()
-                ->get(['id', 'path', 'title', 'description', 'created_at']);
-        }
+        $ownedPhotos = Photo::query()
+            ->whereBelongsTo($user)
+            ->latest()
+            ->get(['id', 'path', 'title', 'description', 'created_at']);
 
         return view('photos.index', compact('photos', 'ownedPhotos'));
     }

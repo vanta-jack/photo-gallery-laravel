@@ -22,6 +22,17 @@ use Illuminate\View\View;
 class UserController extends Controller
 {
     /**
+     * Display the authenticated user's profile in read-only mode.
+     */
+    public function profile(): View
+    {
+        /** @var User $user */
+        $user = auth()->user();
+
+        return $this->renderProfile($user, true);
+    }
+
+    /**
      * Show profile edit form
      *
      * Defaults to editing current user's profile
@@ -49,7 +60,7 @@ class UserController extends Controller
         $user->update($request->validated());
 
         return redirect()
-            ->route('profile.edit')
+            ->route('profile.show')
             ->with('status', 'Profile updated successfully!');
     }
 
@@ -57,6 +68,11 @@ class UserController extends Controller
      * Display the public profile page.
      */
     public function show(User $user): View
+    {
+        return $this->renderProfile($user);
+    }
+
+    private function renderProfile(User $user, bool $showEditCta = false): View
     {
         $user->load('profilePhoto:id,path,title');
 
@@ -104,6 +120,7 @@ class UserController extends Controller
                 'phone' => $phone,
             ],
             'engagement' => $engagement,
+            'showEditCta' => $showEditCta,
         ]);
     }
 

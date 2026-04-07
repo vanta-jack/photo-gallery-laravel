@@ -29,21 +29,12 @@ class AlbumController extends Controller
      */
     public function index(): View
     {
-        // Load public albums OR user's own albums
-        $query = Album::with(['coverPhoto', 'user']);
-        
-        if (auth()->check()) {
-            // Logged in: show public albums + own private albums
-            $query->where(function($q) {
-                $q->where('is_private', false)
-                  ->orWhere('user_id', auth()->id());
-            });
-        } else {
-            // Not logged in: only public albums
-            $query->where('is_private', false);
-        }
-        
-        $albums = $query->orderByDesc('is_favorite')->latest()->paginate(12);
+        $albums = Album::query()
+            ->with(['coverPhoto', 'user'])
+            ->whereBelongsTo(request()->user())
+            ->orderByDesc('is_favorite')
+            ->latest()
+            ->paginate(12);
 
         return view('albums.index', compact('albums'));
     }
@@ -115,7 +106,7 @@ class AlbumController extends Controller
             if (!auth()->check() || 
                 (auth()->id() !== $album->user_id && auth()->user()->role !== 'admin')) {
                 return redirect()
-                    ->route('albums.index')
+                    ->route('home')
                     ->with('error', 'This album is private.');
             }
         }

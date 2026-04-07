@@ -1,18 +1,23 @@
 @extends('layouts.app')
 
-@section('title', 'Create Milestone')
+@section('title', 'Edit Milestone')
 
 @section('content')
 @php
-    $selectedPhotoId = old('photo_id');
+    $selectedPhotoId = old('photo_id', $milestone->photo_id);
     $selectedAlbumId = old('album_id');
     $selectedStage = old('stage');
+    $milestoneStage = $milestone->stage;
+    $isMilestoneStageCurated = array_key_exists($milestoneStage, $curatedStages);
+    $selectedStage = $selectedStage ?? ($isMilestoneStageCurated ? $milestoneStage : 'custom');
+    $customStageValue = old('stage_custom', $isMilestoneStageCurated ? '' : $milestoneStage);
 @endphp
 <div class="bg-card text-card-foreground border border-border rounded p-6 max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold text-foreground mb-6">Create Milestone</h1>
+    <h1 class="text-2xl font-bold text-foreground mb-6">Edit Milestone</h1>
 
-    <form action="{{ route('milestones.store') }}" method="POST" data-photo-base64-form data-photo-required="false">
+    <form action="{{ route('milestones.update', $milestone) }}" method="POST" data-photo-base64-form data-photo-required="false">
         @csrf
+        @method('PUT')
 
         <div class="space-y-6">
             <div>
@@ -33,7 +38,7 @@
                     type="text"
                     id="stage_custom"
                     name="stage_custom"
-                    value="{{ old('stage_custom') }}"
+                    value="{{ $customStageValue }}"
                     class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
                     placeholder="Examples: Gap Year, Residency, Retirement"
                 >
@@ -42,7 +47,7 @@
 
             <div>
                 <label for="label" class="block text-sm font-bold mb-2 text-foreground">Label (e.g., "Month 3", "Grade 2")</label>
-                <input type="text" id="label" name="label" value="{{ old('label') }}" required class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground">
+                <input type="text" id="label" name="label" value="{{ old('label', $milestone->label) }}" required class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground">
                 @error('label')<span class="text-destructive text-sm mt-1 block">{{ $message }}</span>@enderror
             </div>
 
@@ -54,27 +59,42 @@
                     rows="4"
                     data-markdown-editor
                     class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground"
-                >{{ old('description') }}</textarea>
+                >{{ old('description', $milestone->description) }}</textarea>
                 @error('description')<span class="text-destructive text-sm mt-1 block">{{ $message }}</span>@enderror
             </div>
 
             <label class="flex items-center gap-2 text-sm font-bold text-foreground">
                 <input
+                    type="hidden"
+                    name="is_public"
+                    value="0"
+                >
+                <input
                     type="checkbox"
                     name="is_public"
                     value="1"
                     class="rounded border-input"
-                    @checked(old('is_public'))
+                    @checked(old('is_public', $milestone->is_public))
                 >
-                Make this milestone visible on Home
+                Show this milestone publicly on Home
             </label>
             @error('is_public')<span class="text-destructive text-sm mt-1 block">{{ $message }}</span>@enderror
 
             <div class="space-y-4 border-t border-border pt-6">
                 <div>
                     <h2 class="text-lg font-bold text-foreground mb-1">Milestone Photo</h2>
-                    <p class="text-sm text-muted-foreground">Choose an existing photo or upload new images for this milestone.</p>
+                    <p class="text-sm text-muted-foreground">Update or replace the milestone photo as needed.</p>
                 </div>
+
+                @if($milestone->photo)
+                    <div class="flex items-center gap-4 rounded border border-border p-3 bg-background/40">
+                        <img src="{{ \Illuminate\Support\Facades\Storage::url($milestone->photo->path) }}" alt="Current milestone photo" class="w-20 h-20 object-cover rounded">
+                        <div>
+                            <p class="text-sm font-bold text-foreground">Current Photo</p>
+                            <p class="text-xs text-muted-foreground">{{ $milestone->photo->title ?: 'Untitled' }}</p>
+                        </div>
+                    </div>
+                @endif
 
                 <div>
                     <label for="photo_id" class="block text-sm font-bold mb-2 text-foreground">Use Existing Photo</label>
@@ -83,7 +103,7 @@
                         name="photo_id"
                         class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring"
                     >
-                        <option value="">Upload a new photo</option>
+                        <option value="">Keep current photo</option>
                         @foreach($userPhotos as $photo)
                             <option value="{{ $photo->id }}" @selected((string) $selectedPhotoId === (string) $photo->id)>
                                 {{ $photo->title ?: 'Photo #'.$photo->id }}
@@ -163,9 +183,9 @@
 
             <div class="flex gap-4">
                 <button type="submit" class="bg-primary text-primary-foreground font-bold text-sm px-4 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150" data-photo-submit-button>
-                    Create Milestone
+                    Update Milestone
                 </button>
-                <a href="{{ route('milestones.index') }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150">Cancel</a>
+                <a href="{{ route('milestones.show', $milestone) }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150">Cancel</a>
             </div>
         </div>
     </form>

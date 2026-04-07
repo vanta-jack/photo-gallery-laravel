@@ -52,17 +52,19 @@ class GuestbookEntryController extends Controller
      */
     public function store(StoreGuestbookEntryRequest $request): RedirectResponse
     {
+        $validated = $request->validated();
+
         // Create the underlying post
         $post = Post::create([
-            'user_id' => $request->user()->id,
-            'title' => $request->title,
-            'description' => $request->description,
+            'user_id' => $request->user()?->id,
+            'title' => $validated['title'],
+            'description' => $validated['description'],
         ]);
 
         // Create guestbook entry linking to post
-        $entry = GuestbookEntry::create([
+        GuestbookEntry::create([
             'post_id' => $post->id,
-            'photo_id' => $request->photo_id,
+            'photo_id' => $validated['photo_id'] ?? null,
         ]);
 
         return redirect()

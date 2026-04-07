@@ -4,7 +4,10 @@
 
 @section('content')
 <div class="flex justify-between items-center mb-8">
-    <h1 class="text-2xl font-bold text-foreground">Photos</h1>
+    <h1 class="text-2xl font-bold text-foreground inline-flex items-center gap-2">
+        <x-icon name="camera" class="w-6 h-6" />
+        My Photos
+    </h1>
     <div class="flex items-center gap-3">
         @auth
             @if($ownedPhotos->isNotEmpty())

@@ -4,7 +4,10 @@
 
 @section('content')
 <div class="bg-card text-card-foreground border border-border rounded p-6 max-w-2xl mx-auto">
-    <h1 class="text-2xl font-bold text-foreground mb-6">Create Post</h1>
+    <h1 class="text-2xl font-bold text-foreground mb-6 inline-flex items-center gap-2">
+        <x-icon name="pen" class="w-6 h-6" />
+        Create Post
+    </h1>
 
     <form action="{{ route('posts.store') }}" method="POST">
         @csrf
@@ -17,7 +20,7 @@
 
         <div class="mb-6">
             <label for="description" class="block text-sm font-bold mb-2 text-foreground">Content (Markdown supported)</label>
-            <textarea id="description" name="description" rows="10" required class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground">{{ old('description') }}</textarea>
+            <textarea id="description" name="description" rows="10" required data-markdown-editor class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground">{{ old('description') }}</textarea>
             @error('description')<span class="text-destructive text-sm mt-1 block">{{ $message }}</span>@enderror
         </div>
 

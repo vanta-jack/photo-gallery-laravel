@@ -10,12 +10,17 @@
 </div>
 
 <article class="bg-card text-card-foreground border border-border rounded p-6">
-    <h1 class="text-2xl font-bold text-foreground">{{ $post->title }}</h1>
+    <h1 class="text-2xl font-bold text-foreground inline-flex items-center gap-2">
+        <x-icon name="pen" class="w-6 h-6" />
+        {{ $post->title }}
+    </h1>
     <p class="text-sm text-muted-foreground mt-2">
         by {{ trim(($post->user?->first_name ?? '').' '.($post->user?->last_name ?? '')) !== '' ? trim($post->user?->first_name.' '.$post->user?->last_name) : 'Unknown' }}
         • {{ $post->created_at?->format('M d, Y') }}
     </p>
-    <p class="text-foreground mt-5 whitespace-pre-wrap">{{ $post->description }}</p>
+    @if($post->description_html)
+        <div class="text-foreground mt-5 text-sm leading-6 space-y-3">{!! $post->description_html !!}</div>
+    @endif
 
     <div class="mt-6 flex flex-wrap items-center gap-3">
         <span class="inline-flex items-center gap-1 text-sm text-muted-foreground">

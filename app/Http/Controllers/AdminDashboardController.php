@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Album;
+use App\Models\GuestbookEntry;
+use App\Models\Milestone;
 use App\Models\Photo;
 use App\Models\Post;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class AdminDashboardController extends Controller
@@ -49,6 +54,8 @@ class AdminDashboardController extends Controller
             startDate: $windowStart,
             unixTimestamp: true,
         );
+        $registrationSeries = $this->buildDailySeries($registrationCounts, $windowStart);
+        $sessionSeries = $this->buildDailySeries($sessionTrafficCounts, $windowStart);
 
         return view('admin.dashboard', [
             'liveSessions' => [
@@ -67,9 +74,83 @@ class AdminDashboardController extends Controller
                 'albums' => Album::query()->count(),
                 'posts' => Post::query()->count(),
             ],
-            'registrations' => $this->buildDailySeries($registrationCounts, $windowStart),
-            'sessionTraffic' => $this->buildDailySeries($sessionTrafficCounts, $windowStart),
+            'registrations' => $registrationSeries,
+            'sessionTraffic' => $sessionSeries,
+            'registrationChart' => $this->buildChartSeries($registrationSeries),
+            'sessionChart' => $this->buildChartSeries($sessionSeries),
+            'accounts' => User::query()
+                ->latest()
+                ->limit(12)
+                ->get(['id', 'first_name', 'last_name', 'email', 'role', 'created_at']),
+            'moderation' => [
+                'posts' => Post::query()
+                    ->with('user:id,first_name,last_name')
+                    ->latest()
+                    ->limit(8)
+                    ->get(['id', 'user_id', 'title', 'created_at']),
+                'photos' => Photo::query()
+                    ->with('user:id,first_name,last_name')
+                    ->latest()
+                    ->limit(8)
+                    ->get(['id', 'user_id', 'path', 'title', 'created_at']),
+                'albums' => Album::query()
+                    ->with('user:id,first_name,last_name')
+                    ->latest()
+                    ->limit(8)
+                    ->get(['id', 'user_id', 'title', 'is_private', 'created_at']),
+                'milestones' => Milestone::query()
+                    ->with('user:id,first_name,last_name')
+                    ->latest()
+                    ->limit(8)
+                    ->get(['id', 'user_id', 'label', 'is_public', 'created_at']),
+                'guestbook' => GuestbookEntry::query()
+                    ->with('post.user:id,first_name,last_name')
+                    ->latest()
+                    ->limit(8)
+                    ->get(['id', 'post_id', 'created_at']),
+            ],
         ]);
+    }
+
+    public function destroyPost(Post $post): RedirectResponse
+    {
+        Gate::authorize('view-admin-dashboard');
+        $post->delete();
+
+        return redirect()->route('admin.dashboard')->with('status', 'Post removed by moderator.');
+    }
+
+    public function destroyPhoto(Photo $photo): RedirectResponse
+    {
+        Gate::authorize('view-admin-dashboard');
+        Storage::disk('public')->delete($photo->path);
+        $photo->delete();
+
+        return redirect()->route('admin.dashboard')->with('status', 'Photo removed by moderator.');
+    }
+
+    public function destroyAlbum(Album $album): RedirectResponse
+    {
+        Gate::authorize('view-admin-dashboard');
+        $album->delete();
+
+        return redirect()->route('admin.dashboard')->with('status', 'Album removed by moderator.');
+    }
+
+    public function destroyMilestone(Milestone $milestone): RedirectResponse
+    {
+        Gate::authorize('view-admin-dashboard');
+        $milestone->delete();
+
+        return redirect()->route('admin.dashboard')->with('status', 'Milestone removed by moderator.');
+    }
+
+    public function destroyGuestbookEntry(GuestbookEntry $guestbook): RedirectResponse
+    {
+        Gate::authorize('view-admin-dashboard');
+        $guestbook->post->delete();
+
+        return redirect()->route('admin.dashboard')->with('status', 'Guestbook entry removed by moderator.');
     }
 
     /**
@@ -139,5 +220,30 @@ class AdminDashboardController extends Controller
                 ? sprintf('DATE(FROM_UNIXTIME(%s))', $column)
                 : sprintf('DATE(%s)', $column),
         };
+    }
+
+    /**
+     * @param  array<int, array{period: string, label: string, total: int, intensity: int}>  $series
+     * @return array<int, array{label: string, total: int, x: float, y: float}>
+     */
+    private function buildChartSeries(array $series): array
+    {
+        $count = max(1, count($series));
+        $max = max(1, (int) collect($series)->max('total'));
+
+        return collect($series)
+            ->values()
+            ->map(function (array $point, int $index) use ($count, $max): array {
+                $x = $count === 1 ? 50.0 : ($index / ($count - 1)) * 100;
+                $y = 100 - (($point['total'] / $max) * 100);
+
+                return [
+                    'label' => $point['label'],
+                    'total' => (int) $point['total'],
+                    'x' => round($x, 2),
+                    'y' => round($y, 2),
+                ];
+            })
+            ->all();
     }
 }

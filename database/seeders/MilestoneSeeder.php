@@ -21,13 +21,13 @@ class MilestoneSeeder extends Seeder
             'years_ago' => 22,
         ],
         [
-            'stage' => 'baby',
+            'stage' => 'toddler',
             'label' => 'Toddler · First Steps',
             'description' => 'Toddler stage placeholder for first independent steps.',
             'years_ago' => 21,
         ],
         [
-            'stage' => 'grade_school',
+            'stage' => 'preschool',
             'label' => 'Preschool · First Day of Preschool',
             'description' => 'Preschool transition milestone placeholder.',
             'years_ago' => 19,
@@ -39,25 +39,25 @@ class MilestoneSeeder extends Seeder
             'years_ago' => 17,
         ],
         [
-            'stage' => 'grade_school',
+            'stage' => 'middle_school',
             'label' => 'Middle School · Science Fair Finalist',
             'description' => 'Middle school achievement placeholder.',
             'years_ago' => 12,
         ],
         [
-            'stage' => 'highschool_college',
+            'stage' => 'high_school',
             'label' => 'High School · Freshman Orientation',
             'description' => 'High school entry marker in the normalized lifecycle sequence.',
             'years_ago' => 8,
         ],
         [
-            'stage' => 'highschool_college',
+            'stage' => 'college',
             'label' => 'College · Capstone Presentation',
             'description' => 'College completion milestone placeholder.',
             'years_ago' => 3,
         ],
         [
-            'stage' => 'highschool_college',
+            'stage' => 'adult',
             'label' => 'Adult · First Career Role',
             'description' => 'Adult-phase placeholder milestone for post-college progression.',
             'years_ago' => 1,
@@ -94,6 +94,7 @@ class MilestoneSeeder extends Seeder
                     'stage' => $milestone['stage'],
                     'label' => $milestone['label'],
                     'description' => $milestone['description'],
+                    'is_public' => $index % 2 === 0,
                     'created_at' => $timestamp,
                     'updated_at' => $timestamp,
                 ]);
