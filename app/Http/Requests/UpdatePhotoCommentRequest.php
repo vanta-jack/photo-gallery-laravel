@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * UpdatePhotoCommentRequest
- * 
+ *
  * Validates updating a comment.
  */
 class UpdatePhotoCommentRequest extends FormRequest
@@ -19,7 +19,7 @@ class UpdatePhotoCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => ['sometimes', 'string', 'max:1000'],
+            'body' => ['sometimes', 'string', 'max:1000'],
         ];
     }
 }

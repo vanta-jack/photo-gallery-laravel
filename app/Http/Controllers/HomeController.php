@@ -57,7 +57,10 @@ class HomeController extends Controller
 
         return Post::query()
             ->select(['id', 'user_id', 'title', 'description', 'created_at'])
-            ->with('user:id,first_name,last_name')
+            ->with([
+                'user:id,first_name,last_name,profile_photo_id',
+                'user.profilePhoto:id,path',
+            ])
             ->withCount('votes')
             ->latest()
             ->limit(80)
@@ -72,6 +75,7 @@ class HomeController extends Controller
                     'engagement_score' => (int) $post->votes_count,
                     'engagement_label' => sprintf('%d votes', (int) $post->votes_count),
                     'author' => $this->displayName($post->user?->first_name, $post->user?->last_name),
+                    'author_user' => $post->user,
                     'url' => route('posts.show', $post),
                     'icon' => 'pen',
                     'image_url' => null,
@@ -89,7 +93,8 @@ class HomeController extends Controller
             ->select(['id', 'user_id', 'cover_photo_id', 'title', 'description', 'created_at'])
             ->where('is_private', false)
             ->with([
-                'user:id,first_name,last_name',
+                'user:id,first_name,last_name,profile_photo_id',
+                'user.profilePhoto:id,path',
                 'coverPhoto:id,path',
             ])
             ->withCount('photos')
@@ -118,6 +123,7 @@ class HomeController extends Controller
                     'engagement_score' => $engagementScore,
                     'engagement_label' => sprintf('%d comments + ratings', $engagementScore),
                     'author' => $this->displayName($album->user?->first_name, $album->user?->last_name),
+                    'author_user' => $album->user,
                     'url' => route('albums.show', $album),
                     'icon' => 'folder',
                     'image_url' => $album->coverPhoto ? Storage::url($album->coverPhoto->path) : null,
@@ -135,7 +141,8 @@ class HomeController extends Controller
             ->select(['id', 'user_id', 'photo_id', 'label', 'description', 'created_at'])
             ->where('is_public', true)
             ->with([
-                'user:id,first_name,last_name',
+                'user:id,first_name,last_name,profile_photo_id',
+                'user.profilePhoto:id,path',
                 'photo:id,path',
             ])
             ->addSelect([
@@ -161,6 +168,7 @@ class HomeController extends Controller
                     'engagement_score' => $engagementScore,
                     'engagement_label' => sprintf('%d comments + ratings', $engagementScore),
                     'author' => $this->displayName($milestone->user?->first_name, $milestone->user?->last_name),
+                    'author_user' => $milestone->user,
                     'url' => null,
                     'icon' => 'target',
                     'image_url' => $milestone->photo ? Storage::url($milestone->photo->path) : null,
@@ -179,7 +187,10 @@ class HomeController extends Controller
             ->with([
                 'post' => fn ($query) => $query
                     ->select(['id', 'user_id', 'title', 'description'])
-                    ->with('user:id,first_name,last_name')
+                    ->with([
+                        'user:id,first_name,last_name,profile_photo_id',
+                        'user.profilePhoto:id,path',
+                    ])
                     ->withCount('votes'),
                 'photo:id,path',
             ])
@@ -207,6 +218,7 @@ class HomeController extends Controller
                     'engagement_score' => $engagementScore,
                     'engagement_label' => sprintf('%d votes + comments + ratings', $engagementScore),
                     'author' => $this->displayName($entry->post?->user?->first_name, $entry->post?->user?->last_name),
+                    'author_user' => $entry->post?->user,
                     'url' => route('guestbook.index'),
                     'icon' => 'pen-tool',
                     'image_url' => $entry->photo ? Storage::url($entry->photo->path) : null,

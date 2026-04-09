@@ -6,7 +6,7 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * StorePhotoCommentRequest
- * 
+ *
  * Validates adding a comment to a photo.
  */
 class StorePhotoCommentRequest extends FormRequest
@@ -22,7 +22,7 @@ class StorePhotoCommentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => ['required', 'string', 'max:1000'],
+            'body' => ['required', 'string', 'max:1000'],
         ];
     }
 }

@@ -33,6 +33,22 @@
                 <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
                 @error('email')<span class="text-destructive text-sm mt-1 block">{{ $message }}</span>@enderror
             </div>
+
+            <div class="mb-4">
+                <label for="profile_photo_id" class="block text-sm font-bold mb-2 text-foreground">Profile Picture</label>
+                @php
+                    $selectedProfilePhotoId = old('profile_photo_id', $user->profile_photo_id);
+                @endphp
+                <select id="profile_photo_id" name="profile_photo_id" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring">
+                    <option value="">No profile picture</option>
+                    @foreach($availableProfilePhotos as $photo)
+                        <option value="{{ $photo->id }}" @selected((string) $selectedProfilePhotoId === (string) $photo->id)>
+                            {{ $photo->title ?: "Photo #{$photo->id}" }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('profile_photo_id')<span class="text-destructive text-sm mt-1 block">{{ $message }}</span>@enderror
+            </div>
         </div>
 
         {{-- Professional Summary --}}

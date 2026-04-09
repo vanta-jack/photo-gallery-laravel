@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Photo;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Tests\TestCase;
@@ -66,6 +67,76 @@ class UserProfileTest extends TestCase
 
         $user->refresh();
         $this->assertFalse($user->phone_public);
+    }
+
+    public function test_user_can_select_owned_photo_as_profile_photo(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $photo = Photo::factory()->for($user)->create();
+
+        $response = $this->actingAs($user)->put(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'profile_photo_id' => $photo->id,
+        ]);
+
+        $response->assertRedirect(route('profile.show'));
+
+        $user->refresh();
+        $this->assertEquals($photo->id, $user->profile_photo_id);
+    }
+
+    public function test_user_cannot_select_photo_owned_by_another_user(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $otherPhoto = Photo::factory()->create();
+
+        $response = $this->actingAs($user)->from(route('profile.edit'))->put(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'profile_photo_id' => $otherPhoto->id,
+        ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $response->assertSessionHasErrors('profile_photo_id');
+
+        $user->refresh();
+        $this->assertNull($user->profile_photo_id);
+    }
+
+    public function test_user_can_clear_profile_photo_selection(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $photo = Photo::factory()->for($user)->create();
+        $user->update(['profile_photo_id' => $photo->id]);
+
+        $response = $this->actingAs($user)->put(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'profile_photo_id' => null,
+        ]);
+
+        $response->assertRedirect(route('profile.show'));
+
+        $user->refresh();
+        $this->assertNull($user->profile_photo_id);
+    }
+
+    public function test_profile_edit_photo_selector_only_lists_authenticated_users_photos(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $ownPhoto = Photo::factory()->for($user)->create();
+        $otherPhoto = Photo::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('profile.edit'));
+
+        $response->assertOk();
+        $response->assertSee('name="profile_photo_id"', false);
+        $response->assertSee('value="'.$ownPhoto->id.'"', false);
+        $response->assertDontSee('value="'.$otherPhoto->id.'"', false);
     }
 
     public function test_academic_history_validation(): void
@@ -187,14 +258,14 @@ class UserProfileTest extends TestCase
         ]);
 
         $user->refresh();
-        
+
         // Verify data persists correctly as arrays
         $this->assertEquals($academicData, $user->academic_history);
         $this->assertEquals($experienceData, $user->professional_experience);
         $this->assertEquals($skillsData, $user->skills);
         $this->assertEquals($certificationsData, $user->certifications);
         $this->assertEquals($otherLinksData, $user->other_links);
-        
+
         // Verify casts are working (should return arrays, not JSON strings)
         $this->assertIsArray($user->academic_history);
         $this->assertIsArray($user->professional_experience);

@@ -16,7 +16,10 @@
 @forelse($posts as $post)
     <div class="bg-card text-card-foreground border border-border rounded p-6 mb-4">
         <h2 class="text-xl font-bold text-foreground mb-2">{{ $post->title }}</h2>
-        <p class="text-muted-foreground text-sm mb-4">by {{ $post->user->first_name ?? 'Unknown' }} • {{ $post->created_at->diffForHumans() }}</p>
+        <div class="mb-4 flex items-center gap-3">
+            @include('guestbook.partials.user-avatar', ['user' => $post->user])
+            <p class="text-muted-foreground text-sm">by {{ trim(($post->user?->first_name ?? '').' '.($post->user?->last_name ?? '')) !== '' ? trim(($post->user?->first_name ?? '').' '.($post->user?->last_name ?? '')) : 'Unknown' }} • {{ $post->created_at->diffForHumans() }}</p>
+        </div>
         @if($post->description_html)
             <div class="text-foreground mb-4 text-sm leading-6">{!! $post->description_html !!}</div>
         @endif

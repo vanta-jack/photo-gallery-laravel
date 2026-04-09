@@ -86,7 +86,10 @@
                         <span>{{ ucfirst($item['type']) }}</span>
                     </div>
                     <h2 class="text-lg font-bold text-foreground">{{ $item['title'] }}</h2>
-                    <p class="text-xs text-muted-foreground mt-1">By {{ $item['author'] }} • {{ $item['created_at']->diffForHumans() }}</p>
+                    <div class="mt-2 flex items-center gap-3">
+                        @include('guestbook.partials.user-avatar', ['user' => $item['author_user'] ?? null])
+                        <p class="text-xs text-muted-foreground">By {{ $item['author'] }} • {{ $item['created_at']->diffForHumans() }}</p>
+                    </div>
                 </div>
                 <span class="inline-flex items-center rounded border border-border bg-secondary px-2 py-1 text-xs font-bold text-secondary-foreground">
                     {{ $item['engagement_label'] }}

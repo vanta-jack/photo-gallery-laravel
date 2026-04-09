@@ -4,9 +4,11 @@ namespace Tests\Feature;
 
 use App\Models\Album;
 use App\Models\Milestone;
+use App\Models\Photo;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class HomeFeedAndMyRoutesTest extends TestCase
@@ -72,5 +74,32 @@ class HomeFeedAndMyRoutesTest extends TestCase
             ->assertOk()
             ->assertSeeText('Public Milestone')
             ->assertDontSeeText('Public Post');
+    }
+
+    public function test_home_feed_activity_cards_show_author_avatar_or_fallback_initials(): void
+    {
+        $withAvatar = User::factory()->user()->create([
+            'first_name' => 'Iris',
+            'last_name' => 'West',
+        ]);
+        $avatarPhoto = Photo::factory()->for($withAvatar)->create([
+            'path' => 'photos/avatars/iris-west.jpg',
+        ]);
+        $withAvatar->update(['profile_photo_id' => $avatarPhoto->id]);
+        Post::factory()->for($withAvatar)->create(['title' => 'Avatar Feed Post']);
+
+        $withoutAvatar = User::factory()->user()->create([
+            'first_name' => 'Maya',
+            'last_name' => 'Nash',
+            'profile_photo_id' => null,
+        ]);
+        Post::factory()->for($withoutAvatar)->create(['title' => 'Fallback Feed Post']);
+
+        $this->get(route('home', ['type' => 'post']))
+            ->assertOk()
+            ->assertSeeText('Avatar Feed Post')
+            ->assertSeeText('Fallback Feed Post')
+            ->assertSee(Storage::url($avatarPhoto->path), false)
+            ->assertSeeText('MN');
     }
 }

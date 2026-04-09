@@ -14,10 +14,13 @@
         <x-icon name="pen" class="w-6 h-6" />
         {{ $post->title }}
     </h1>
-    <p class="text-sm text-muted-foreground mt-2">
-        by {{ trim(($post->user?->first_name ?? '').' '.($post->user?->last_name ?? '')) !== '' ? trim($post->user?->first_name.' '.$post->user?->last_name) : 'Unknown' }}
-        • {{ $post->created_at?->format('M d, Y') }}
-    </p>
+    <div class="mt-3 flex items-center gap-3">
+        @include('guestbook.partials.user-avatar', ['user' => $post->user])
+        <p class="text-sm text-muted-foreground">
+            by {{ trim(($post->user?->first_name ?? '').' '.($post->user?->last_name ?? '')) !== '' ? trim($post->user?->first_name.' '.$post->user?->last_name) : 'Unknown' }}
+            • {{ $post->created_at?->format('M d, Y') }}
+        </p>
+    </div>
     @if($post->description_html)
         <div class="text-foreground mt-5 text-sm leading-6 space-y-3">{!! $post->description_html !!}</div>
     @endif

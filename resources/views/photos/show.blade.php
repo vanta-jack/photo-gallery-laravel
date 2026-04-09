@@ -66,8 +66,8 @@
 
                 <form action="{{ route('photos.comments.store', $photo) }}" method="POST" class="space-y-2">
                     @csrf
-                    <label for="content" class="block text-sm font-bold text-foreground">Add Comment</label>
-                    <textarea id="content" name="content" rows="3" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
+                    <label for="body" class="block text-sm font-bold text-foreground">Add Comment</label>
+                    <textarea id="body" name="body" rows="3" class="w-full bg-background text-foreground text-sm border border-input rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
                     <button type="submit" class="w-full bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150">
                         Post Comment
                     </button>
@@ -97,7 +97,7 @@
     <h2 class="text-lg font-bold text-foreground mb-4">Comments</h2>
     @forelse($photo->comments as $comment)
         <article class="py-3 border-b border-border last:border-b-0">
-            <p class="text-foreground text-sm">{{ $comment->content }}</p>
+            <p class="text-foreground text-sm">{{ $comment->body }}</p>
             <p class="text-muted-foreground text-xs mt-2">
                 {{ $comment->user?->first_name }} {{ $comment->user?->last_name }} • {{ $comment->created_at->diffForHumans() }}
             </p>

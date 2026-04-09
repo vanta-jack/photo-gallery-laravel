@@ -44,7 +44,12 @@ class UserController extends Controller
 
         $this->authorize('update', $user);
 
-        return view('users.edit', compact('user'));
+        $availableProfilePhotos = $user->photos()
+            ->select(['id', 'title', 'path'])
+            ->orderByDesc('id')
+            ->get();
+
+        return view('users.edit', compact('user', 'availableProfilePhotos'));
     }
 
     /**

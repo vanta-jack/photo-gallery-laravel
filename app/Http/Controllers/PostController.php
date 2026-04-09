@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Post;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Models\Post;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
  * PostController
- * 
+ *
  * Manages user posts (blog-style entries).
  * Posts support markdown in description field.
  */
@@ -19,7 +19,7 @@ class PostController extends Controller
 {
     /**
      * Display all posts
-     * 
+     *
      * Public route: anyone can read posts
      * Eager load author and vote counts
      */
@@ -27,7 +27,10 @@ class PostController extends Controller
     {
         $posts = Post::query()
             ->whereBelongsTo(request()->user())
-            ->with('user')
+            ->with([
+                'user:id,first_name,last_name,profile_photo_id',
+                'user.profilePhoto:id,path',
+            ])
             ->withCount('votes')
             ->latest()
             ->paginate(15);
@@ -73,7 +76,11 @@ class PostController extends Controller
     public function show(Post $post): View
     {
         // Load author and votes with voters
-        $post->load(['user', 'votes.user']);
+        $post->load([
+            'user:id,first_name,last_name,profile_photo_id',
+            'user.profilePhoto:id,path',
+            'votes.user',
+        ]);
         $post->setAttribute('description_html', $this->renderMarkdown($post->description));
 
         return view('posts.show', compact('post'));
@@ -105,7 +112,7 @@ class PostController extends Controller
 
     /**
      * Delete post
-     * 
+     *
      * Votes are cascade-deleted via foreign key constraints
      */
     public function destroy(Post $post): RedirectResponse

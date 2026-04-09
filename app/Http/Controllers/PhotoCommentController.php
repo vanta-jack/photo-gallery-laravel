@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Photo;
-use App\Models\PhotoComment;
 use App\Http\Requests\StorePhotoCommentRequest;
 use App\Http\Requests\UpdatePhotoCommentRequest;
+use App\Models\Photo;
+use App\Models\PhotoComment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
  * PhotoCommentController
- * 
+ *
  * Manages comments on photos.
  * Nested resource: comments belong to photos
  */
@@ -30,10 +30,12 @@ class PhotoCommentController extends Controller
      */
     public function store(StorePhotoCommentRequest $request, Photo $photo): RedirectResponse
     {
-        $comment = PhotoComment::create([
+        $validated = $request->validated();
+
+        PhotoComment::create([
             'photo_id' => $photo->id,
             'user_id' => $request->user()->id,
-            'content' => $request->content,
+            'body' => $validated['body'],
         ]);
 
         return redirect()
