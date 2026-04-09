@@ -1,6 +1,6 @@
 # T011: User Post Engagement Metrics
 
-**Status:** APPROVED  
+**Status:** RESOLVED  
 **Tag:** `engagement-metrics`
 
 ---

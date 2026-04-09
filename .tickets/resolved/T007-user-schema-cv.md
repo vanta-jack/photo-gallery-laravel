@@ -5,12 +5,12 @@ This ticket has been implemented in the current branch. The users schema now inc
 
 This ticket will add CV/About Me fields to support professional profile functionality as specified in .tickets/active/004-site-implementations.md.
 
-STATUS: Implementation complete, approved.
+STATUS: Implementation complete, resolved.
 </instructions>
 
 # T007: User Schema for CV/About Me
 
-**Status:** APPROVED  
+**Status:** RESOLVED  
 **Tag:** `user-schema-cv`
 
 ---

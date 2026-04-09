@@ -3,12 +3,12 @@ DOCUMENT TYPE: Proposal Ticket (T008-about-me-public-page.md)
 
 This proposal intentionally combines original T008 (About Me public page) and proposed T009 (Contact modal) so both can be implemented in one pass.
 
-STATUS: Proposal approved for implementation.
+STATUS: Proposal resolved.
 </instructions>
 
 # T008: About Me Public Page + Contact Modal
 
-**Status:** APPROVED  
+**Status:** RESOLVED  
 **Tag:** `about-me-public-page`
 
 ---

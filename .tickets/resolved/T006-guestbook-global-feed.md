@@ -1,6 +1,6 @@
 # T006: Guestbook as Global Feed
 
-**Status:** APPROVED  
+**Status:** RESOLVED  
 **Tag:** `guestbook-global-feed`
 
 ---

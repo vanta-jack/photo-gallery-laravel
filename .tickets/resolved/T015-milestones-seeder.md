@@ -1,6 +1,6 @@
 # T015: Milestones Seed Data Structure
 
-**Status:** APPROVED  
+**Status:** RESOLVED  
 **Tag:** `milestones-seeder`
 
 ---

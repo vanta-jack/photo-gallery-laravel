@@ -1,6 +1,6 @@
 # T005: Animated Splash Page
 
-**Status:** APPROVED  
+**Status:** RESOLVED  
 **Tag:** `splash-page`
 
 ---

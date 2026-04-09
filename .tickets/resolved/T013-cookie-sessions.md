@@ -1,6 +1,6 @@
 # T013: Cookie-Based Sessions
 
-**Status:** APPROVED  
+**Status:** RESOLVED  
 **Tag:** `cookie-sessions`
 
 ---
