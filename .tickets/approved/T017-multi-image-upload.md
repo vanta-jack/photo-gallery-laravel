@@ -1,6 +1,6 @@
 # T017: Multi-Image Upload
 
-**Status:** IN PROGRESS  
+**Status:** APPROVED  
 **Tag:** `multi-image-upload`
 
 ---

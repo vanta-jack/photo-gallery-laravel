@@ -1,6 +1,6 @@
 # T014: Graphical Analysis - Photo Ratings
 
-**Status:** IN PROGRESS  
+**Status:** APPROVED  
 **Tag:** `photo-analytics`
 
 ---

@@ -1,6 +1,6 @@
 # T004: Photo Slide Mode
 
-**Status:** IN PROGRESS  
+**Status:** APPROVED  
 **Tag:** `photo-slide-mode`
 
 ---
