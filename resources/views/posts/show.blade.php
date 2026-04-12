@@ -1,43 +1,15 @@
 @extends('layouts.app')
 
-@section('title', $post->title)
+@section('title', 'Page')
 
 @section('content')
-<div class="mb-6">
-    <a href="{{ route('posts.index') }}" class="bg-secondary text-secondary-foreground font-bold text-sm px-4 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150 inline-block">
-        Back to Posts
-    </a>
+
+<div class="space-y-4">
+    <div class="bg-card text-card-foreground border border-border rounded p-6">
+        <h1 class="text-2xl font-bold text-foreground mb-4">Page Title</h1>
+        <p class="text-muted-foreground">Your blank canvas for this page.</p>
+        <p class="text-sm text-muted-foreground mt-4">Edit this view at: <code class="bg-secondary px-2 py-1 rounded">resources/views/path/to/view.blade.php</code></p>
+    </div>
 </div>
 
-<article class="bg-card text-card-foreground border border-border rounded p-6">
-    <h1 class="text-2xl font-bold text-foreground inline-flex items-center gap-2">
-        <x-icon name="pen" class="w-6 h-6" />
-        {{ $post->title }}
-    </h1>
-    <div class="mt-3 flex items-center gap-3">
-        @include('guestbook.partials.user-avatar', ['user' => $post->user])
-        <p class="text-sm text-muted-foreground">
-            by {{ trim(($post->user?->first_name ?? '').' '.($post->user?->last_name ?? '')) !== '' ? trim($post->user?->first_name.' '.$post->user?->last_name) : 'Unknown' }}
-            • {{ $post->created_at?->format('M d, Y') }}
-        </p>
-    </div>
-    @if($post->description_html)
-        <div class="text-foreground mt-5 text-sm leading-6 space-y-3">{!! $post->description_html !!}</div>
-    @endif
-
-    <div class="mt-6 flex flex-wrap items-center gap-3">
-        <span class="inline-flex items-center gap-1 text-sm text-muted-foreground">
-            <x-icon name="thumbs-up" class="w-4 h-4" />
-            {{ $post->votes->count() }} likes
-        </span>
-        @auth
-            <form action="{{ route('posts.votes.store', $post) }}" method="POST">
-                @csrf
-                <button type="submit" class="bg-primary text-primary-foreground font-bold text-xs px-3 py-2 rounded border border-primary hover:opacity-90 transition-opacity duration-150">
-                    Toggle Like
-                </button>
-            </form>
-        @endauth
-    </div>
-</article>
 @endsection

@@ -28,7 +28,11 @@ export default defineConfig({
     server: {
         host: "0.0.0.0",
         watch: {
-            ignored: ['**/storage/framework/views/**'],
+            ignored: [
+                '**/storage/framework/views/**',
+                '**/vendor/**',
+                '**/node_modeules/**'
+            ],
         },
         hmr: {
             host: localIp

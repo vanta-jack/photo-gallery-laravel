@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VANITI FAIRE — @yield('title')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="bg-background text-foreground font-sans antialiased min-h-screen">
 
@@ -31,6 +32,8 @@
     </main>
 
     @include('layouts.partials.footer')
+
+    @livewireScripts
 
 </body>
 </html>

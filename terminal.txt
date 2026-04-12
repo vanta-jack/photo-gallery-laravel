@@ -1,0 +1,35 @@
+$ vite
+
+  VITE v8.0.3  ready in 3393 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.254.103:5173/
+  ➜  press h + enter to show help
+
+  LARAVEL v13.3.0  plugin v3.0.1
+
+  ➜  APP_URL: http://localhost
+node:internal/fs/watchers:316
+    const error = new UVException({
+                  ^
+
+Error: ENOSPC: System limit for number of file watchers reached, watch '/home/dev/workspaces/web-station/photo-gallery-laravel/vendor/fakerphp/faker/src/Faker/Provider/bg_BG/Internet.php'
+    at FSWatcher.<computed> (node:internal/fs/watchers:316:19)
+    at Object.watch (node:fs:2522:36)
+    at createFsWatchInstance (file:///home/dev/workspaces/web-station/photo-gallery-laravel/node_modules/vite/dist/node/chunks/node.js:8480:16)
+    at setFsWatchListener (file:///home/dev/workspaces/web-station/photo-gallery-laravel/node_modules/vite/dist/node/chunks/node.js:8522:14)
+    at NodeFsHandler._watchWithNodeFs (file:///home/dev/workspaces/web-station/photo-gallery-laravel/node_modules/vite/dist/node/chunks/node.js:8636:20)
+    at NodeFsHandler._handleFile (file:///home/dev/workspaces/web-station/photo-gallery-laravel/node_modules/vite/dist/node/chunks/node.js:8680:24)
+    at NodeFsHandler._addToNodeFs (file:///home/dev/workspaces/web-station/photo-gallery-laravel/node_modules/vite/dist/node/chunks/node.js:8854:26)
+Emitted 'error' event on FSWatcher instance at:
+    at FSWatcher._handleError (file:///home/dev/workspaces/web-station/photo-gallery-laravel/node_modules/vite/dist/node/chunks/node.js:9653:146)
+    at NodeFsHandler._addToNodeFs (file:///home/dev/workspaces/web-station/photo-gallery-laravel/node_modules/vite/dist/node/chunks/node.js:8859:18) {
+  errno: -28,
+  syscall: 'watch',
+  code: 'ENOSPC',
+  path: '/home/dev/workspaces/web-station/photo-gallery-laravel/vendor/fakerphp/faker/src/Faker/Provider/bg_BG/Internet.php',
+  filename: '/home/dev/workspaces/web-station/photo-gallery-laravel/vendor/fakerphp/faker/src/Faker/Provider/bg_BG/Internet.php'
+}
+
+Node.js v25.9.0
+error: script "dev" exited with code 1
