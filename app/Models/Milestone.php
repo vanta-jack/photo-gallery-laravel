@@ -2,21 +2,23 @@
 
 namespace App\Models;
 
+use Database\Factories\MilestoneFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Milestone Model
- * 
+ *
  * Tracks important life events with optional photos, categorized by life stage.
  * Common use case: tracking child development (baby months, school years, etc.)
  */
 #[Fillable(['user_id', 'photo_id', 'stage', 'label', 'description', 'is_public'])]
 class Milestone extends Model
 {
-    /** @use HasFactory<\Database\Factories\MilestoneFactory> */
+    /** @use HasFactory<MilestoneFactory> */
     use HasFactory;
 
     /**
@@ -69,11 +71,19 @@ class Milestone extends Model
 
     /**
      * Get the photo representing this milestone.
-     * 
+     *
      * Optional - milestone might be created before photo is available.
      */
     public function photo(): BelongsTo
     {
         return $this->belongsTo(Photo::class);
+    }
+
+    /**
+     * Get all photos linked to this milestone.
+     */
+    public function photos(): BelongsToMany
+    {
+        return $this->belongsToMany(Photo::class)->withTimestamps();
     }
 }

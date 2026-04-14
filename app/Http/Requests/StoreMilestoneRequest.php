@@ -11,7 +11,7 @@ use Illuminate\Validation\Validator;
 
 /**
  * StoreMilestoneRequest
- * 
+ *
  * Validates creating a milestone (life event tracker).
  */
 class StoreMilestoneRequest extends FormRequest
@@ -35,9 +35,16 @@ class StoreMilestoneRequest extends FormRequest
             'label' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'is_public' => ['nullable', 'boolean'],
-            'photo_id' => ['nullable', 'integer', 'exists:photos,id', 'required_without_all:photo,photos'],
-            'photo' => ['nullable', 'string', 'regex:/^data:image\/(webp|png|jpeg|jpg);base64,/', 'required_without_all:photo_id,photos'],
-            'photos' => ['nullable', 'array', 'min:1', 'required_without_all:photo_id,photo'],
+            'photo_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('photos', 'id')->where(fn ($query) => $query->where('user_id', $this->user()?->id)),
+            ],
+            'photo_ids' => ['nullable', 'array'],
+            'photo_ids.*' => ['integer', 'exists:photos,id'],
+            'main_photo_pick' => ['nullable', 'string', 'regex:/^(existing:\d+|upload:\d+)$/'],
+            'photo' => ['nullable', 'string', 'regex:/^data:image\/(webp|png|jpeg|jpg);base64,/'],
+            'photos' => ['nullable', 'array', 'min:1'],
             'photos.*' => ['required', 'string', 'regex:/^data:image\/(webp|png|jpeg|jpg);base64,/'],
             'album_id' => ['nullable', 'integer'],
         ];
@@ -53,16 +60,25 @@ class StoreMilestoneRequest extends FormRequest
         return [
             function (Validator $validator): void {
                 $user = $this->user();
+                $photoIds = collect($this->input('photo_ids', []))
+                    ->map(static fn ($id): int => (int) $id)
+                    ->filter(static fn (int $id): bool => $id > 0)
+                    ->values();
+                $hasUploads = $this->filled('photo') || $this->filled('photos');
 
-                if ($this->filled('photo_id')) {
-                    $photoId = (int) $this->input('photo_id');
-                    $ownsPhoto = Photo::query()
-                        ->whereKey($photoId)
+                if ($photoIds->isEmpty() && ! $hasUploads) {
+                    $validator->errors()->add('photo_id', 'Please select an existing photo or upload a new one.');
+                    $validator->errors()->add('photo_ids', 'Please select an existing photo or upload a new one.');
+                }
+
+                if ($photoIds->isNotEmpty()) {
+                    $ownedCount = Photo::query()
                         ->where('user_id', $user?->id)
-                        ->exists();
+                        ->whereIn('id', $photoIds)
+                        ->count();
 
-                    if (! $ownsPhoto) {
-                        $validator->errors()->add('photo_id', 'Please select one of your photos.');
+                    if ($ownedCount !== $photoIds->count()) {
+                        $validator->errors()->add('photo_ids', 'Please select only your own photos.');
                     }
                 }
 
@@ -93,9 +109,6 @@ class StoreMilestoneRequest extends FormRequest
     {
         return [
             'stage_custom.required' => 'Please provide a custom life stage.',
-            'photo_id.required_without_all' => 'Please select an existing photo or upload a new one.',
-            'photo.required_without_all' => 'Please select an existing photo or upload a new one.',
-            'photos.required_without_all' => 'Please select an existing photo or upload a new one.',
             'photo.regex' => 'Photo must be a processed WebP, PNG, or JPEG image.',
             'photos.min' => 'Please select at least one image before uploading.',
             'photos.*.required' => 'Each selected photo must include image data.',
@@ -106,7 +119,8 @@ class StoreMilestoneRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'photo_id' => 'photo',
+            'photo_ids' => 'photos',
+            'photo_ids.*' => 'photo',
             'photo' => 'photo',
             'photos' => 'photos',
             'photos.*' => 'photo',
@@ -116,11 +130,27 @@ class StoreMilestoneRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
+        $prepared = [
             'is_public' => $this->boolean('is_public'),
             'stage_custom' => is_string($this->input('stage_custom'))
                 ? trim($this->input('stage_custom'))
                 : $this->input('stage_custom'),
+        ];
+
+        $photoId = $this->input('photo_id');
+        if (
+            ($photoId !== null && $photoId !== '')
+            && (! $this->has('photo_ids') || ! is_array($this->input('photo_ids')))
+        ) {
+            $prepared['photo_ids'] = [(int) $photoId];
+        }
+
+        if (($photoId !== null && $photoId !== '') && ! $this->filled('main_photo_pick')) {
+            $prepared['main_photo_pick'] = 'existing:'.(int) $photoId;
+        }
+
+        $this->merge([
+            ...$prepared,
         ]);
     }
 }

@@ -17,6 +17,29 @@ class UpdateUserRequest extends FormRequest
         return $this->user() !== null;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $repeatableFields = [
+            'academic_history',
+            'professional_experience',
+            'skills',
+            'certifications',
+            'other_links',
+        ];
+
+        $defaults = [];
+
+        foreach ($repeatableFields as $field) {
+            if (! $this->has($field)) {
+                $defaults[$field] = [];
+            }
+        }
+
+        if ($defaults !== []) {
+            $this->merge($defaults);
+        }
+    }
+
     /**
      * Allow updating name, email, profile photo, and CV fields
      * Email must be unique except for current user

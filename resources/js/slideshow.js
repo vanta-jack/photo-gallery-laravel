@@ -87,7 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
     image.src = currentPhoto.url;
     image.alt = currentPhoto.title || 'Slideshow photo';
     title.textContent = currentPhoto.title || 'Photo';
-    description.textContent = currentPhoto.description || 'No description provided.';
+    if (typeof currentPhoto.description_html === 'string' && currentPhoto.description_html.trim() !== '') {
+      description.innerHTML = currentPhoto.description_html;
+    } else {
+      description.textContent = 'No description provided.';
+    }
     counter.textContent = `${currentIndex + 1} / ${photos.length}`;
     date.textContent = currentPhoto.created_at || '';
     detailLink.href = currentPhoto.show_url || '#';
@@ -121,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   openButton.addEventListener('click', openSlideshow);
+  openButton.addEventListener('touchend', openSlideshow);
   closeButton.addEventListener('click', closeSlideshow);
   nextButton.addEventListener('click', goToNext);
   previousButton.addEventListener('click', goToPrevious);

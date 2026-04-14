@@ -9,15 +9,15 @@ use App\Models\Milestone;
 use App\Models\Photo;
 use App\Models\User;
 use App\Services\ImageProcessor;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use App\Services\PhotoAttachmentManager;
+use App\Support\MarkdownRenderer;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
  * MilestoneController
- * 
+ *
  * Manages milestones - life events tracking (baby months, school years, etc.).
  * Private by design: users only see their own milestones.
  */
@@ -25,7 +25,7 @@ class MilestoneController extends Controller
 {
     /**
      * Display user's milestones
-     * 
+     *
      * Auth required: only show current user's milestones
      */
     public function index(): View
@@ -39,7 +39,7 @@ class MilestoneController extends Controller
             ->paginate(20);
 
         $milestones->getCollection()->transform(function (Milestone $milestone): Milestone {
-            $milestone->setAttribute('description_html', $this->renderMarkdown($milestone->description));
+            $milestone->setAttribute('description_html', MarkdownRenderer::toSafeHtml($milestone->description));
 
             return $milestone;
         });
@@ -76,25 +76,32 @@ class MilestoneController extends Controller
     /**
      * Store new milestone
      */
-    public function store(StoreMilestoneRequest $request, ImageProcessor $imageProcessor): RedirectResponse
-    {
+    public function store(
+        StoreMilestoneRequest $request,
+        ImageProcessor $imageProcessor,
+        PhotoAttachmentManager $attachments,
+    ): RedirectResponse {
         $validated = $request->validated();
         $user = $request->user();
         $selectedAlbum = $this->resolveSelectedAlbum($validated, $user);
-        $photoPayloads = $this->extractPhotoPayloads($validated);
-        $uploadedPhotos = $this->storeUploadedPhotos(
-            $photoPayloads,
+        $uploadedPhotos = $attachments->storeUploadedPhotos(
+            $attachments->extractPhotoPayloads($validated),
             $user,
             $imageProcessor,
             $validated['label'],
             $validated['description'] ?? null,
         );
-
-        $selectedPhotoId = $this->resolveSelectedPhotoId($validated, $uploadedPhotos);
+        $existingPhotoIds = $this->resolveExistingPhotoIds($validated, $user->id, $attachments);
+        $selectedPhotoId = $attachments->resolveMainPhotoId(
+            $validated['main_photo_pick'] ?? null,
+            $existingPhotoIds,
+            $uploadedPhotos,
+        );
 
         if ($selectedPhotoId === null) {
             throw ValidationException::withMessages([
                 'photo_id' => 'Please select an existing photo or upload a new one.',
+                'photo_ids' => 'Please select an existing photo or upload a new one.',
             ]);
         }
 
@@ -107,7 +114,15 @@ class MilestoneController extends Controller
             'is_public' => (bool) ($validated['is_public'] ?? false),
         ]);
 
-        $this->attachPhotosToAlbum($selectedAlbum, $uploadedPhotos, $selectedPhotoId);
+        $allPhotoIds = collect($existingPhotoIds)
+            ->merge($uploadedPhotos->pluck('id')->map(static fn ($id): int => (int) $id))
+            ->when($selectedPhotoId !== null, static fn ($ids) => $ids->push($selectedPhotoId))
+            ->unique()
+            ->values()
+            ->all();
+
+        $milestone->photos()->sync($allPhotoIds);
+        $this->attachPhotosToAlbum($selectedAlbum, $allPhotoIds);
 
         return redirect()
             ->route('milestones.show', $milestone)
@@ -127,9 +142,12 @@ class MilestoneController extends Controller
         }
 
         $milestone->load('photo');
-        $milestone->setAttribute('description_html', $this->renderMarkdown($milestone->description));
+        $milestone->setAttribute('description_html', MarkdownRenderer::toSafeHtml($milestone->description));
 
-        return view('milestones.show', compact('milestone'));
+        // Load spotlight photos (related milestone photos)
+        $spotlightPhotos = $milestone->photos()->orderByDesc('id')->get();
+
+        return view('milestones.show', compact('milestone', 'spotlightPhotos'));
     }
 
     /**
@@ -138,6 +156,7 @@ class MilestoneController extends Controller
     public function edit(Milestone $milestone): View
     {
         $this->authorize('update', $milestone);
+        $milestone->loadMissing('photos');
         $curatedStages = Milestone::curatedStageOptions();
 
         $albums = Album::query()
@@ -156,25 +175,56 @@ class MilestoneController extends Controller
     /**
      * Update milestone
      */
-    public function update(UpdateMilestoneRequest $request, Milestone $milestone, ImageProcessor $imageProcessor): RedirectResponse
-    {
+    public function update(
+        UpdateMilestoneRequest $request,
+        Milestone $milestone,
+        ImageProcessor $imageProcessor,
+        PhotoAttachmentManager $attachments,
+    ): RedirectResponse {
         $this->authorize('update', $milestone);
 
         $validated = $request->validated();
         $selectedAlbum = $this->resolveSelectedAlbum($validated, $request->user());
-        $photoPayloads = $this->extractPhotoPayloads($validated);
-        $uploadedPhotos = $this->storeUploadedPhotos(
-            $photoPayloads,
-            $request->user(),
-            $imageProcessor,
-            $validated['label'] ?? $milestone->label,
-            $validated['description'] ?? $milestone->description,
-        );
+        $hasAttachmentInput = $request->exists('photo_ids')
+            || $request->exists('main_photo_pick')
+            || $request->exists('photo_id')
+            || $request->filled('photo')
+            || $request->filled('photos');
 
-        $selectedPhotoId = $this->resolveSelectedPhotoId($validated, $uploadedPhotos);
+        $allPhotoIds = collect($milestone->photos()->pluck('photos.id')->all())
+            ->push($milestone->photo_id)
+            ->filter(static fn ($id): bool => is_numeric($id) && (int) $id > 0)
+            ->map(static fn ($id): int => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+        $selectedPhotoId = $milestone->photo_id;
+
+        if ($hasAttachmentInput) {
+            $uploadedPhotos = $attachments->storeUploadedPhotos(
+                $attachments->extractPhotoPayloads($validated),
+                $milestone->user,
+                $imageProcessor,
+                $validated['label'] ?? $milestone->label,
+                $validated['description'] ?? $milestone->description,
+            );
+            $existingPhotoIds = $this->resolveExistingPhotoIds($validated, $milestone->user_id, $attachments);
+            $selectedPhotoId = $attachments->resolveMainPhotoId(
+                $validated['main_photo_pick'] ?? null,
+                $existingPhotoIds,
+                $uploadedPhotos,
+            );
+
+            $allPhotoIds = collect($existingPhotoIds)
+                ->merge($uploadedPhotos->pluck('id')->map(static fn ($id): int => (int) $id))
+                ->when($selectedPhotoId !== null, static fn ($ids) => $ids->push($selectedPhotoId))
+                ->unique()
+                ->values()
+                ->all();
+        }
 
         $data = $validated;
-        unset($data['photo'], $data['photos'], $data['album_id']);
+        unset($data['photo'], $data['photos'], $data['album_id'], $data['photo_ids'], $data['main_photo_pick'], $data['photo_id']);
 
         if (array_key_exists('stage', $data)) {
             $data['stage'] = $this->resolveStage($validated);
@@ -182,16 +232,7 @@ class MilestoneController extends Controller
 
         unset($data['stage_custom']);
 
-        if (array_key_exists('photo_id', $data) && $data['photo_id'] === null) {
-            unset($data['photo_id']);
-        }
-
-        $shouldSetPhotoId = $uploadedPhotos->isNotEmpty()
-            || (array_key_exists('photo_id', $validated) && $validated['photo_id'] !== null);
-
-        if ($selectedPhotoId !== null && $shouldSetPhotoId) {
-            $data['photo_id'] = $selectedPhotoId;
-        }
+        $data['photo_id'] = $selectedPhotoId;
 
         if (array_key_exists('is_public', $validated)) {
             $data['is_public'] = (bool) $validated['is_public'];
@@ -199,8 +240,11 @@ class MilestoneController extends Controller
 
         $milestone->update($data);
 
-        $albumPhotoId = $selectedPhotoId ?? $milestone->photo_id;
-        $this->attachPhotosToAlbum($selectedAlbum, $uploadedPhotos, $albumPhotoId);
+        if ($hasAttachmentInput) {
+            $milestone->photos()->sync($allPhotoIds);
+        }
+
+        $this->attachPhotosToAlbum($selectedAlbum, $allPhotoIds);
 
         return redirect()
             ->route('milestones.show', $milestone)
@@ -223,38 +267,6 @@ class MilestoneController extends Controller
 
     /**
      * @param  array<string, mixed>  $validated
-     * @return array<int, string>
-     */
-    private function extractPhotoPayloads(array $validated): array
-    {
-        if (isset($validated['photos']) && is_array($validated['photos'])) {
-            return array_values(array_filter(
-                $validated['photos'],
-                static fn ($photo): bool => is_string($photo) && $photo !== '',
-            ));
-        }
-
-        if (isset($validated['photo']) && is_string($validated['photo']) && $validated['photo'] !== '') {
-            return [$validated['photo']];
-        }
-
-        return [];
-    }
-
-    private function renderMarkdown(?string $description): ?string
-    {
-        if (! filled($description)) {
-            return null;
-        }
-
-        return Str::markdown($description, [
-            'html_input' => 'strip',
-            'allow_unsafe_links' => false,
-        ]);
-    }
-
-    /**
-     * @param  array<string, mixed>  $validated
      */
     private function resolveSelectedAlbum(array $validated, ?User $user): ?Album
     {
@@ -269,72 +281,13 @@ class MilestoneController extends Controller
     }
 
     /**
-     * @param  array<int, string>  $photoPayloads
+     * @param  array<int, int>  $photoIds
      */
-    private function storeUploadedPhotos(
-        array $photoPayloads,
-        User $user,
-        ImageProcessor $imageProcessor,
-        string $label,
-        ?string $description,
-    ): EloquentCollection {
-        $uploadedPhotos = new EloquentCollection;
-
-        if ($photoPayloads === []) {
-            return $uploadedPhotos;
-        }
-
-        $totalUploads = count($photoPayloads);
-
-        foreach ($photoPayloads as $index => $photoData) {
-            if (! is_string($photoData) || ! $this->hasSupportedClientImageData($photoData)) {
-                continue;
-            }
-
-            $uploadedPhotos->push(Photo::create([
-                'user_id' => $user->id,
-                'path' => $imageProcessor->process($photoData),
-                'title' => $this->resolvePhotoTitle($label, $index, $totalUploads),
-                'description' => $description,
-            ]));
-        }
-
-        if ($uploadedPhotos->isEmpty()) {
-            throw ValidationException::withMessages([
-                'photo' => 'None of the selected files could be uploaded.',
-            ]);
-        }
-
-        return $uploadedPhotos;
-    }
-
-    private function resolvePhotoTitle(string $label, int $index, int $totalUploads): string
-    {
-        $baseTitle = trim($label) !== '' ? $label : 'Milestone Photo';
-        $title = $totalUploads > 1 ? sprintf('%s (%d)', $baseTitle, $index + 1) : $baseTitle;
-
-        return Str::limit($title, 255, '');
-    }
-
-    private function resolveSelectedPhotoId(array $validated, EloquentCollection $uploadedPhotos): ?int
-    {
-        if (isset($validated['photo_id']) && $validated['photo_id'] !== null) {
-            return (int) $validated['photo_id'];
-        }
-
-        return $uploadedPhotos->first()?->id;
-    }
-
-    private function attachPhotosToAlbum(?Album $album, EloquentCollection $uploadedPhotos, ?int $selectedPhotoId): void
+    private function attachPhotosToAlbum(?Album $album, array $photoIds): void
     {
         if ($album === null) {
             return;
         }
-
-        $photoIds = $uploadedPhotos->pluck('id')->when(
-            $selectedPhotoId !== null,
-            fn ($collection) => $collection->push($selectedPhotoId),
-        )->unique()->values()->all();
 
         if ($photoIds === []) {
             return;
@@ -343,9 +296,25 @@ class MilestoneController extends Controller
         $album->photos()->syncWithoutDetaching($photoIds);
     }
 
-    private function hasSupportedClientImageData(string $photoData): bool
+    /**
+     * @param  array<string, mixed>  $validated
+     * @return array<int, int>
+     */
+    private function resolveExistingPhotoIds(array $validated, int $ownerId, PhotoAttachmentManager $attachments): array
     {
-        return preg_match('/^data:image\/(webp|png|jpeg|jpg);base64,/', $photoData) === 1;
+        $requestedIds = collect($validated['photo_ids'] ?? [])
+            ->filter(static fn ($id): bool => $id !== null && $id !== '');
+
+        if (isset($validated['photo_id']) && $validated['photo_id'] !== null && $validated['photo_id'] !== '') {
+            $requestedIds->push((int) $validated['photo_id']);
+        }
+
+        $mainPick = $validated['main_photo_pick'] ?? null;
+        if (is_string($mainPick) && str_starts_with($mainPick, 'existing:')) {
+            $requestedIds->push((int) substr($mainPick, strlen('existing:')));
+        }
+
+        return $attachments->allowedExistingPhotoIds($requestedIds->all(), $ownerId);
     }
 
     /**

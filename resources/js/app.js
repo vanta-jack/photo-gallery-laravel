@@ -3,5 +3,6 @@ import './theme';
 import './photo-upload';
 import './slideshow';
 import './splash';
-import './markdown-editor';
-import './contact-modal';
+import './modal-handler';
+import './markdown-toolbar';
+import './photo-selector-sync';

@@ -2,28 +2,33 @@
 
 namespace Tests\Feature;
 
+use App\Models\Album;
+use App\Models\GuestbookEntry;
 use App\Models\Milestone;
+use App\Models\Photo;
+use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class DemoSeedBaselineTest extends TestCase
 {
     use LazilyRefreshDatabase;
 
-    public function test_database_seeder_creates_clean_two_user_baseline(): void
+    public function test_database_seeder_creates_deterministic_demo_content_scenarios(): void
     {
         $this->seed();
 
         $this->assertDatabaseCount('users', 2);
-        $this->assertDatabaseCount('photos', 0);
-        $this->assertDatabaseCount('albums', 0);
-        $this->assertDatabaseCount('posts', 0);
-        $this->assertDatabaseCount('photo_ratings', 0);
-        $this->assertDatabaseCount('photo_comments', 0);
-        $this->assertDatabaseCount('post_votes', 0);
-        $this->assertDatabaseCount('guestbook_entries', 0);
+        $this->assertDatabaseCount('photos', 6);
+        $this->assertDatabaseCount('albums', 5);
+        $this->assertDatabaseCount('posts', 6);
+        $this->assertDatabaseCount('photo_ratings', 6);
+        $this->assertDatabaseCount('photo_comments', 6);
+        $this->assertDatabaseCount('post_votes', 7);
+        $this->assertDatabaseCount('guestbook_entries', 3);
 
         $expectedUsers = [
             'user@domain.com' => 'user',
@@ -47,6 +52,48 @@ class DemoSeedBaselineTest extends TestCase
             $this->assertNotEmpty($user->github);
             $this->assertNotEmpty($user->orcid_id);
         }
+
+        $photos = Photo::query()->get();
+        $this->assertTrue(
+            $photos->every(fn (Photo $photo): bool => str_starts_with($photo->path, 'photos/demo/')),
+        );
+        $this->assertTrue(
+            $photos->every(fn (Photo $photo): bool => Storage::disk('public')->exists($photo->path)),
+        );
+        $this->assertSame(2, $photos->whereNull('description')->count());
+
+        $this->assertDatabaseHas('albums', [
+            'title' => 'Family Highlights',
+            'is_private' => false,
+            'is_favorite' => true,
+        ]);
+        $this->assertDatabaseHas('albums', [
+            'title' => 'Admin Review Queue',
+            'is_private' => true,
+            'is_favorite' => false,
+        ]);
+
+        $emptyAlbum = Album::query()
+            ->where('title', 'Upcoming Uploads')
+            ->first();
+
+        $this->assertNotNull($emptyAlbum);
+        $this->assertSame(0, $emptyAlbum->photos()->count());
+        $this->assertNull($emptyAlbum->cover_photo_id);
+
+        $anonymousPost = Post::query()
+            ->where('title', 'Guestbook · Anonymous hello')
+            ->first();
+
+        $this->assertNotNull($anonymousPost);
+        $this->assertNull($anonymousPost->user_id);
+
+        $anonymousGuestbookEntry = GuestbookEntry::query()
+            ->where('post_id', $anonymousPost->id)
+            ->first();
+
+        $this->assertNotNull($anonymousGuestbookEntry);
+        $this->assertNull($anonymousGuestbookEntry->photo_id);
     }
 
     public function test_database_seeder_creates_photo_optional_lifecycle_milestones_for_demo_users(): void

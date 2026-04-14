@@ -274,6 +274,42 @@ class UserProfileTest extends TestCase
         $this->assertIsArray($user->other_links);
     }
 
+    public function test_repeatable_sections_can_be_cleared_when_inputs_removed(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'user',
+            'academic_history' => [
+                ['degree' => 'BSc CS', 'institution' => 'MIT', 'graduation_date' => '2020-06-01'],
+            ],
+            'professional_experience' => [
+                ['title' => 'Developer', 'company' => 'Acme', 'start_date' => '2020-01-01', 'end_date' => '2023-12-31'],
+            ],
+            'skills' => ['PHP', 'Laravel'],
+            'certifications' => [
+                ['name' => 'AWS Certified Developer', 'issuer' => 'Amazon', 'awarded_on' => '2024-03-15'],
+            ],
+            'other_links' => [
+                ['label' => 'Portfolio', 'url' => 'https://example.com'],
+            ],
+        ]);
+
+        $response = $this->actingAs($user)->put(route('profile.update'), [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+        ]);
+
+        $response->assertRedirect(route('profile.show'));
+        $response->assertSessionHas('status');
+
+        $user->refresh();
+        $this->assertSame([], $user->academic_history);
+        $this->assertSame([], $user->professional_experience);
+        $this->assertSame([], $user->skills);
+        $this->assertSame([], $user->certifications);
+        $this->assertSame([], $user->other_links);
+    }
+
     public function test_profile_update_route_targets_authenticated_user(): void
     {
         $user1 = User::factory()->create(['role' => 'user']);
@@ -346,5 +382,50 @@ class UserProfileTest extends TestCase
     {
         $this->get(route('profile.show'))
             ->assertRedirect(route('login'));
+    }
+
+    public function test_profile_view_renders_with_responsive_layout_and_lucide_icons(): void
+    {
+        $user = User::factory()->create([
+            'role' => 'user',
+            'linkedin' => 'https://linkedin.com/in/testuser',
+            'github' => 'https://github.com/testuser',
+            'orcid_id' => '0000-0002-1234-5678',
+            'phone' => '+1 (555) 123-4567',
+            'phone_public' => true,
+            'bio' => 'Professional software engineer.',
+        ]);
+
+        $user->update(['other_links' => [
+            ['label' => 'Portfolio', 'url' => 'https://example.com/portfolio'],
+        ]]);
+
+        $response = $this->actingAs($user)->get(route('profile.show'));
+
+        $response->assertOk();
+
+        // Verify responsive layout structure
+        $response->assertSee('aspect-square', false); // Profile picture should be square
+        $response->assertSee('Professional Summary', false);
+
+        // Verify icon links show both icon AND actual URL (not site name)
+        $response->assertSee('https://linkedin.com/in/testuser', false);
+        $response->assertSee('https://github.com/testuser', false);
+        $response->assertSee('https://orcid.org/0000-0002-1234-5678', false);
+        $response->assertSee('https://example.com/portfolio', false);
+
+        // Verify icon links have proper accessibility labels
+        $response->assertSee('aria-label="LinkedIn profile"', false);
+        $response->assertSee('aria-label="GitHub profile"', false);
+        $response->assertSee('aria-label="ORCID profile"', false);
+        $response->assertSee('aria-label="Phone contact"', false);
+        $response->assertSee('aria-label="Portfolio profile"', false);
+
+        // Verify social links point to correct URLs
+        $response->assertSee('tel:+1 (555) 123-4567', false);
+        $response->assertSee('+1 (555) 123-4567', false); // Phone number shown as text
+
+        // Verify phone visibility notice
+        $response->assertSee('Phone is visible in Contact Me', false);
     }
 }

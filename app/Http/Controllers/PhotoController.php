@@ -8,6 +8,7 @@ use App\Models\Album;
 use App\Models\Photo;
 use App\Models\User;
 use App\Services\ImageProcessor;
+use App\Support\MarkdownRenderer;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -36,20 +37,7 @@ class PhotoController extends Controller
      */
     public function index(): View
     {
-        $user = request()->user();
-
-        $photos = Photo::query()
-            ->whereBelongsTo($user)
-            ->with('user')
-            ->latest()
-            ->paginate(12);
-
-        $ownedPhotos = Photo::query()
-            ->whereBelongsTo($user)
-            ->latest()
-            ->get(['id', 'path', 'title', 'description', 'created_at']);
-
-        return view('photos.index', compact('photos', 'ownedPhotos'));
+        return view('photos.index');
     }
 
     /**
@@ -235,8 +223,15 @@ class PhotoController extends Controller
 
         // Load relationships to prevent N+1 in the view
         $photo->load(['user', 'comments.user', 'ratings']);
+        $photo->setAttribute('description_html', MarkdownRenderer::toSafeHtml($photo->description));
 
-        return view('photos.show', compact('photo'));
+        // Load other photos by the same uploader for spotlight navigation
+        $spotlightPhotos = Photo::query()
+            ->whereBelongsTo($photo->user)
+            ->orderByDesc('id')
+            ->get();
+
+        return view('photos.show', compact('photo', 'spotlightPhotos'));
     }
 
     /**

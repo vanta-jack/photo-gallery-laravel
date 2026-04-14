@@ -1,6 +1,6 @@
 <header class="bg-card border-b border-border">
     <nav class="max-w-5xl mx-auto px-4 py-4">
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center overflow-x-auto whitespace-nowrap gap-6">
             <div class="flex gap-6">
                 <a href="{{ route('home') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Home</a>
                 <a href="{{ route('photos.analytics') }}" class="text-sm font-bold text-foreground hover:opacity-80 transition-opacity duration-150">Analytics</a>
@@ -16,9 +16,9 @@
                 @endcan
             </div>
             <div class="flex gap-4 items-center">
-                <button 
-                    id="theme-toggle" 
-                    type="button" 
+                <button
+                    id="theme-toggle"
+                    type="button"
                     class="inline-flex items-center gap-2 bg-secondary text-secondary-foreground font-bold text-sm px-3 py-2 rounded border border-border hover:opacity-90 transition-opacity duration-150"
                     title="Toggle theme (device/dark/light)"
                     aria-label="Toggle theme preference"

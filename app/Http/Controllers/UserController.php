@@ -7,11 +7,11 @@ use App\Models\PhotoComment;
 use App\Models\PhotoRating;
 use App\Models\PostVote;
 use App\Models\User;
+use App\Support\MarkdownRenderer;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -100,13 +100,7 @@ class UserController extends Controller
             $phone = null;
         }
 
-        $bioHtml = null;
-        if (filled($user->bio)) {
-            $bioHtml = Str::markdown($user->bio, [
-                'html_input' => 'strip',
-                'allow_unsafe_links' => false,
-            ]);
-        }
+        $bioHtml = MarkdownRenderer::toSafeHtml($user->bio);
 
         $engagement = $this->buildEngagementMetrics($user);
 
@@ -123,6 +117,7 @@ class UserController extends Controller
                 'linkedin' => $linkedin,
                 'github' => $github,
                 'phone' => $phone,
+                'phone_public' => $user->phone_public,
             ],
             'engagement' => $engagement,
             'showEditCta' => $showEditCta,
@@ -155,13 +150,18 @@ class UserController extends Controller
     {
         return collect($entries ?? [])
             ->filter(fn ($entry): bool => is_array($entry) && filled($entry['title'] ?? null) && filled($entry['company'] ?? null))
-            ->map(fn ($entry): array => [
-                'title' => trim((string) ($entry['title'] ?? '')),
-                'company' => trim((string) ($entry['company'] ?? '')),
-                'start_date' => trim((string) ($entry['start_date'] ?? '')),
-                'end_date' => filled($entry['end_date'] ?? null) ? trim((string) $entry['end_date']) : null,
-                'description' => filled($entry['description'] ?? null) ? trim((string) $entry['description']) : null,
-            ])
+            ->map(function ($entry): array {
+                $description = filled($entry['description'] ?? null) ? trim((string) $entry['description']) : null;
+
+                return [
+                    'title' => trim((string) ($entry['title'] ?? '')),
+                    'company' => trim((string) ($entry['company'] ?? '')),
+                    'start_date' => trim((string) ($entry['start_date'] ?? '')),
+                    'end_date' => filled($entry['end_date'] ?? null) ? trim((string) $entry['end_date']) : null,
+                    'description' => $description,
+                    'description_html' => MarkdownRenderer::toSafeHtml($description),
+                ];
+            })
             ->sortByDesc('start_date')
             ->values()
             ->all();

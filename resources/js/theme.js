@@ -7,6 +7,63 @@
  * - Persists setting in localStorage across sessions
  */
 
+const safeStorage = (() => {
+    const memoryStore = new Map();
+
+    const resolveStorage = () => {
+        if (typeof window === 'undefined') {
+            return null;
+        }
+
+        try {
+            return window.localStorage;
+        } catch {
+            return null;
+        }
+    };
+
+    return {
+        getItem(key) {
+            const storage = resolveStorage();
+            if (storage) {
+                try {
+                    return storage.getItem(key);
+                } catch {
+                    // Fall back to in-memory storage.
+                }
+            }
+
+            return memoryStore.has(key) ? memoryStore.get(key) : null;
+        },
+        setItem(key, value) {
+            const storage = resolveStorage();
+            if (storage) {
+                try {
+                    storage.setItem(key, value);
+                    memoryStore.set(key, value);
+                    return;
+                } catch {
+                    // Fall back to in-memory storage.
+                }
+            }
+
+            memoryStore.set(key, value);
+        },
+        removeItem(key) {
+            const storage = resolveStorage();
+            if (storage) {
+                try {
+                    storage.removeItem(key);
+                } catch {
+                    // Fall back to in-memory storage.
+                }
+            }
+
+            memoryStore.delete(key);
+        },
+    };
+})();
+
 class ThemeManager {
     constructor() {
         this.STORAGE_KEY = 'theme';
@@ -35,7 +92,7 @@ class ThemeManager {
      * Returns: 'light' | 'dark' | null
      */
     getSavedTheme() {
-        const saved = localStorage.getItem(this.STORAGE_KEY);
+        const saved = safeStorage.getItem(this.STORAGE_KEY);
         // Only return if explicitly set to 'light' or 'dark'
         return (saved === this.LIGHT_CLASS || saved === this.DARK_CLASS) ? saved : null;
     }
@@ -94,12 +151,12 @@ class ThemeManager {
     setTheme(theme) {
         if (theme === null) {
             // Clear storage to follow device preference
-            localStorage.removeItem(this.STORAGE_KEY);
+            safeStorage.removeItem(this.STORAGE_KEY);
             const systemTheme = this.getSystemPreference();
             this.applyTheme(systemTheme);
         } else {
             // Save preference to storage
-            localStorage.setItem(this.STORAGE_KEY, theme);
+            safeStorage.setItem(this.STORAGE_KEY, theme);
             this.applyTheme(theme);
         }
     }
@@ -144,12 +201,22 @@ class ThemeManager {
 }
 
 function initializeThemeManager() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
     if (window.themeManager) {
         return;
     }
 
-    window.themeManager = new ThemeManager();
-    window.dispatchEvent(new CustomEvent('theme-manager:ready'));
+    try {
+        window.themeManager = new ThemeManager();
+        if (typeof window.dispatchEvent === 'function' && typeof CustomEvent === 'function') {
+            window.dispatchEvent(new CustomEvent('theme-manager:ready'));
+        }
+    } catch (error) {
+        console.warn('Theme manager failed to initialize.', error);
+    }
 }
 
 // Initialize theme manager when DOM is ready

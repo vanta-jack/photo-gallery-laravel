@@ -59,8 +59,71 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Demo reset baseline
 
-Reset the app to the clean demo dataset (two accounts + lifecycle milestones, no photos/social content):
+Reset the app to the deterministic demo dataset (demo user/admin, lifecycle milestones, photos/albums/posts/guestbook, and engagement records):
 
 ```bash
 php artisan migrate:fresh --seed
+```
+
+## Demo runbook
+
+### 1) Install and prepare
+
+```bash
+composer install
+bun install
+cp .env.example .env
+php artisan key:generate
+php artisan storage:link
+```
+
+### 2) Seed deterministic demo data
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+Demo accounts:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| User | `user@domain.com` | `password` |
+| Admin | `admin@domain.com` | `password` |
+
+### 3) Build and run for demo
+
+```bash
+bun run build
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Open:
+
+- Local desktop: `http://127.0.0.1:8000`
+- Other devices on same LAN (phone/tablet): `http://<your-lan-ip>:8000`
+
+Find your LAN IP with:
+
+```bash
+ip -4 addr show | grep -oP '(?<=inet\\s)\\d+(\\.\\d+){3}' | grep -v '^127\\.'
+```
+
+### 4) Demo flow checklist
+
+1. Guest flow:
+   - Browse home feed (`/`) and switch feed filters.
+   - Open guestbook (`/guestbook`) and create a guest entry.
+2. Authenticated user flow:
+   - Sign in as `user@domain.com`.
+   - Review and manage photos (`/photos`) and albums (`/albums`).
+   - Create/edit guestbook entries and verify profile attribution.
+3. Admin flow:
+   - Sign in as `admin@domain.com`.
+   - Open admin dashboard (`/admin/dashboard`) and perform moderation actions.
+
+### 5) Pre-demo validation
+
+```bash
+php artisan test --compact
+bun run build
 ```

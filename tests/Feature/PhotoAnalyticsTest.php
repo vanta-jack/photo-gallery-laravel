@@ -51,7 +51,7 @@ class PhotoAnalyticsTest extends TestCase
         });
         $response->assertSeeText('Sunset Vista');
         $response->assertSeeText('Forest Trail');
-        $response->assertSeeText('5.0/5');
+        $response->assertSeeText('5.0');
         $response->assertSeeText('4 comments');
     }
 

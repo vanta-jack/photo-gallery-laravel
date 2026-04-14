@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Models\Photo;
 use App\Models\Post;
+use App\Services\ImageProcessor;
+use App\Services\PhotoAttachmentManager;
+use App\Support\MarkdownRenderer;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 /**
@@ -18,30 +21,11 @@ use Illuminate\View\View;
 class PostController extends Controller
 {
     /**
-     * Display all posts
-     *
-     * Public route: anyone can read posts
-     * Eager load author and vote counts
+     * Display authenticated user's posts.
      */
     public function index(): View
     {
-        $posts = Post::query()
-            ->whereBelongsTo(request()->user())
-            ->with([
-                'user:id,first_name,last_name,profile_photo_id',
-                'user.profilePhoto:id,path',
-            ])
-            ->withCount('votes')
-            ->latest()
-            ->paginate(15);
-
-        $posts->getCollection()->transform(function (Post $post): Post {
-            $post->setAttribute('description_html', $this->renderMarkdown($post->description));
-
-            return $post;
-        });
-
-        return view('posts.index', compact('posts'));
+        return view('posts.index');
     }
 
     /**
@@ -49,21 +33,54 @@ class PostController extends Controller
      */
     public function create(): View
     {
-        return view('posts.create');
+        $userPhotos = Photo::query()
+            ->whereBelongsTo(request()->user())
+            ->latest()
+            ->get(['id', 'path', 'title']);
+
+        return view('posts.create', compact('userPhotos'));
     }
 
     /**
      * Store new post
      */
-    public function store(StorePostRequest $request): RedirectResponse
-    {
+    public function store(
+        StorePostRequest $request,
+        ImageProcessor $imageProcessor,
+        PhotoAttachmentManager $attachments,
+    ): RedirectResponse {
         $validated = $request->validated();
+        $existingPhotoIds = $attachments->allowedExistingPhotoIds($validated['photo_ids'] ?? [], $request->user()->id);
+        $uploadedPhotos = $attachments->storeUploadedPhotos(
+            $attachments->extractPhotoPayloads($validated),
+            $request->user(),
+            $imageProcessor,
+            $validated['title'] ?? 'Post Photo',
+            $validated['description'] ?? null,
+        );
+        $mainPhotoId = $attachments->resolveMainPhotoId(
+            $validated['main_photo_pick'] ?? null,
+            $existingPhotoIds,
+            $uploadedPhotos,
+        );
 
         $post = Post::create([
             'user_id' => $request->user()->id,
             'title' => $validated['title'],
             'description' => $validated['description'],
+            'photo_id' => $mainPhotoId,
         ]);
+
+        $allPhotoIds = collect($existingPhotoIds)
+            ->merge($uploadedPhotos->pluck('id')->map(static fn ($id): int => (int) $id))
+            ->when($mainPhotoId !== null, static fn ($ids) => $ids->push($mainPhotoId))
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($allPhotoIds !== []) {
+            $post->photos()->sync($allPhotoIds);
+        }
 
         return redirect()
             ->route('posts.show', $post)
@@ -75,15 +92,22 @@ class PostController extends Controller
      */
     public function show(Post $post): View
     {
-        // Load author and votes with voters
         $post->load([
             'user:id,first_name,last_name,profile_photo_id',
             'user.profilePhoto:id,path',
             'votes.user',
+            'photo:id,path,title',
+            'photos:id,path,title',
         ]);
-        $post->setAttribute('description_html', $this->renderMarkdown($post->description));
+        $post->setAttribute('description_html', MarkdownRenderer::toSafeHtml($post->description));
 
-        return view('posts.show', compact('post'));
+        $mainPhoto = $post->photo ?? $post->photos->first();
+        $attachmentPhotos = $post->photos
+            ->when($mainPhoto !== null, static fn ($photos) => $photos->prepend($mainPhoto))
+            ->unique('id')
+            ->values();
+
+        return view('posts.show', compact('post', 'mainPhoto', 'attachmentPhotos'));
     }
 
     /**
@@ -92,18 +116,63 @@ class PostController extends Controller
     public function edit(Post $post): View
     {
         $this->authorize('update', $post);
+        $post->loadMissing('photos');
 
-        return view('posts.edit', compact('post'));
+        $userPhotos = Photo::query()
+            ->whereBelongsTo($post->user)
+            ->latest()
+            ->get(['id', 'path', 'title']);
+
+        return view('posts.edit', compact('post', 'userPhotos'));
     }
 
     /**
      * Update post
      */
-    public function update(UpdatePostRequest $request, Post $post): RedirectResponse
-    {
+    public function update(
+        UpdatePostRequest $request,
+        Post $post,
+        ImageProcessor $imageProcessor,
+        PhotoAttachmentManager $attachments,
+    ): RedirectResponse {
         $this->authorize('update', $post);
+        $validated = $request->validated();
+        $hasAttachmentInput = $request->exists('photo_ids')
+            || $request->exists('main_photo_pick')
+            || $request->exists('photo_id')
+            || $request->filled('photo')
+            || $request->filled('photos');
 
-        $post->update($request->validated());
+        $data = $validated;
+        unset($data['photo'], $data['photos'], $data['photo_ids'], $data['main_photo_pick'], $data['photo_id']);
+
+        if ($hasAttachmentInput) {
+            $existingPhotoIds = $attachments->allowedExistingPhotoIds($validated['photo_ids'] ?? [], $post->user_id);
+            $uploadedPhotos = $attachments->storeUploadedPhotos(
+                $attachments->extractPhotoPayloads($validated),
+                $post->user,
+                $imageProcessor,
+                $validated['title'] ?? $post->title ?? 'Post Photo',
+                $validated['description'] ?? $post->description,
+            );
+            $mainPhotoId = $attachments->resolveMainPhotoId(
+                $validated['main_photo_pick'] ?? null,
+                $existingPhotoIds,
+                $uploadedPhotos,
+            );
+            $data['photo_id'] = $mainPhotoId;
+
+            $allPhotoIds = collect($existingPhotoIds)
+                ->merge($uploadedPhotos->pluck('id')->map(static fn ($id): int => (int) $id))
+                ->when($mainPhotoId !== null, static fn ($ids) => $ids->push($mainPhotoId))
+                ->unique()
+                ->values()
+                ->all();
+
+            $post->photos()->sync($allPhotoIds);
+        }
+
+        $post->update($data);
 
         return redirect()
             ->route('posts.show', $post)
@@ -124,17 +193,5 @@ class PostController extends Controller
         return redirect()
             ->route('posts.index')
             ->with('status', 'Post deleted successfully!');
-    }
-
-    private function renderMarkdown(?string $description): ?string
-    {
-        if (! filled($description)) {
-            return null;
-        }
-
-        return Str::markdown($description, [
-            'html_input' => 'strip',
-            'allow_unsafe_links' => false,
-        ]);
     }
 }

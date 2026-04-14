@@ -102,4 +102,34 @@ class HomeFeedAndMyRoutesTest extends TestCase
             ->assertSee(Storage::url($avatarPhoto->path), false)
             ->assertSeeText('MN');
     }
+
+    public function test_home_feed_post_cards_support_main_photo_and_attachment_fallback_paths(): void
+    {
+        $user = User::factory()->user()->create();
+
+        $attachmentOnlyPhoto = Photo::factory()->for($user)->create([
+            'path' => 'photos/feed/attachment-fallback.webp',
+        ]);
+        $absoluteMainPhoto = Photo::factory()->for($user)->create([
+            'path' => 'https://cdn.example.test/photos/feed/main-photo.webp',
+        ]);
+
+        $attachmentFallbackPost = Post::factory()->for($user)->create([
+            'title' => 'Attachment fallback post',
+            'photo_id' => null,
+        ]);
+        $attachmentFallbackPost->photos()->sync([$attachmentOnlyPhoto->id]);
+
+        Post::factory()->for($user)->create([
+            'title' => 'Absolute path main photo post',
+            'photo_id' => $absoluteMainPhoto->id,
+        ]);
+
+        $this->get(route('home', ['type' => 'post']))
+            ->assertOk()
+            ->assertSeeText('Attachment fallback post')
+            ->assertSeeText('Absolute path main photo post')
+            ->assertSee(Storage::url($attachmentOnlyPhoto->path), false)
+            ->assertSee($absoluteMainPhoto->path, false);
+    }
 }
