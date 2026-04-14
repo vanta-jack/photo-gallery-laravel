@@ -77,7 +77,7 @@ $hasPhotos = $slideshowPhotos->isNotEmpty();
     aria-hidden="true"
     aria-label="Photo slideshow"
 >
-    <script type="application/json" data-slideshow-photos>{!! $slideshowPhotos->toJson(JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
+    <script type="application/json" data-slideshow-photos>{!! json_encode($slideshowPhotos, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}</script>
 
     <div class="mx-auto flex h-full w-full max-w-5xl flex-col gap-3">
         <div class="flex flex-wrap items-center justify-between gap-2" data-slideshow-controls>
