@@ -112,7 +112,7 @@ if ($resolvedMainPick === null && $resolvedLegacyMainId > 0) {
         <div class="space-y-2 border-t border-border pt-3">
             <div class="flex items-center justify-between gap-2">
                 <p class="text-xs font-bold uppercase tracking-wide text-muted-foreground">Upload new photos</p>
-                <x-ui.button type="button" variant="secondary" size="sm" class="touch-manipulation" data-photo-upload-open aria-controls="{{ $componentId }}-dialog" aria-haspopup="dialog">
+                <x-ui.button type="button" variant="secondary" size="sm" data-photo-upload-open aria-controls="{{ $componentId }}-dialog" aria-haspopup="dialog">
                     Upload
                 </x-ui.button>
             </div>
